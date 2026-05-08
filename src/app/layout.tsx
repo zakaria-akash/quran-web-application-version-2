@@ -8,6 +8,11 @@ import DesktopSettings from "./desktop-settings";
 export const metadata: Metadata = {
   title: "Quran Mazid",
   description: "Read, Study, and Learn The Quran",
+  icons: {
+    icon: "/green-leaf.svg",
+    shortcut: "/green-leaf.svg",
+    apple: "/green-leaf.svg",
+  },
 };
 
 export default function RootLayout({

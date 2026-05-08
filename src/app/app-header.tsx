@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import SettingsModal from "./settings/settings-modal";
 import { Surah, Translation } from "@/lib/quran";
 import SurahSidebar from "./surah-sidebar";
+import SettingsContent from "./settings/settings-content";
 
 const HEADER_SEARCH_DEBOUNCE_MS = 300;
 
@@ -68,12 +68,22 @@ export default function AppHeader() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isSettingsDrawerOpen, setIsSettingsDrawerOpen] = useState(false);
   const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const searchShellRef = useRef<HTMLDivElement>(null);
   const trimmedQuery = useMemo(() => query.trim(), [query]);
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+    setQuery("");
+    setResults([]);
+    setSurahMatches([]);
+    setErrorMessage("");
+    setIsLoading(false);
+    setIsFocused(false);
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -104,6 +114,25 @@ export default function AppHeader() {
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
+
+  useEffect(() => {
+    if (!isSearchOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeSearch();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isSearchOpen]);
 
   useEffect(() => {
     if (!trimmedQuery) {
@@ -155,20 +184,13 @@ export default function AppHeader() {
   const showPanel = isFocused && (isLoading || errorMessage || trimmedQuery || results.length > 0 || surahMatches.length > 0);
 
   const handleResultSelection = () => {
-    setQuery("");
-    setResults([]);
-    setSurahMatches([]);
-    setErrorMessage("");
-    setIsLoading(false);
-    setIsFocused(false);
-    setIsSearchOpen(false);
+    closeSearch();
   };
 
   return (
     <>
       <header className="app-header">
-        {/* Brand */}
-        <div className="app-header-brand-container" style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <div className="app-header-left">
           <button
             className="app-header-hamburger"
             onClick={() => setIsNavDrawerOpen(!isNavDrawerOpen)}
@@ -177,33 +199,30 @@ export default function AppHeader() {
           >
             ☰
           </button>
-          <Link href="/" className="app-header-brand" style={{ marginLeft: "10px" }}>
-            <span>🌿</span>
+
+          <Link href="/" className="app-header-brand">
+            <img src="/green-leaf.svg" alt="Quran Mazid logo" className="app-header-logo" />
             Quran Mazid
           </Link>
         </div>
 
-        {/* Search & Actions */}
-        <div className="app-header-actions-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Search Icon */}
-          <button 
-            onClick={() => setIsSearchOpen(!isSearchOpen)} 
-            className="app-header-settings-icon" 
+        <div className="app-header-right">
+          <button
+            onClick={() => (isSearchOpen ? closeSearch() : setIsSearchOpen(true))}
+            className="app-header-settings-icon"
             aria-label="Search"
           >
             🔍
           </button>
 
-          {/* Theme Toggle Icon (Placeholder) */}
           <button className="app-header-settings-icon" aria-label="Toggle theme">
             🌙
           </button>
 
-          {/* Settings Icon */}
           <button
             type="button"
-            className="app-header-settings-icon"
-            onClick={() => setIsSettingsModalOpen(true)}
+            className="app-header-settings-icon app-header-mobile-settings"
+            onClick={() => setIsSettingsDrawerOpen(true)}
             aria-label="Reader settings"
           >
             ⚙️
@@ -213,9 +232,28 @@ export default function AppHeader() {
 
       {/* Search Modal */}
       {isSearchOpen && (
-        <div className="settings-modal-backdrop" onClick={() => setIsSearchOpen(false)}>
-          <div className="settings-modal" onClick={(e) => e.stopPropagation()} style={{ padding: "20px" }}>
-            <div className="app-header-search-shell" style={{ width: "100%" }}>
+        <div className="settings-modal-backdrop app-search-backdrop" onClick={closeSearch}>
+          <section
+            className="settings-modal app-search-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search Quran"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="app-search-modal-header">
+              <h2 className="app-search-modal-title">Search Quran</h2>
+              <button
+                type="button"
+                className="app-search-modal-close"
+                onClick={closeSearch}
+                aria-label="Close search"
+              >
+                ✕
+              </button>
+            </header>
+
+            <div className="app-search-modal-body">
+              <div className="app-header-search-shell app-search-shell-full" ref={searchShellRef}>
               <input
                 id="global-header-search"
                 type="text"
@@ -224,26 +262,63 @@ export default function AppHeader() {
                 onFocus={() => setIsFocused(true)}
                 placeholder="Search..."
                 className="app-header-search-input"
-                style={{ background: "#222" }}
                 autoFocus
               />
-              {showPanel && (
-                <div className="app-header-search-panel" role="listbox" aria-label="Search results" style={{ position: "relative" }}>
-                   {isLoading && <p className="app-header-search-status">Searching...</p>}
-                   {surahMatches.map((surah) => (
-                      <Link key={surah.id} href={`/surah/${surah.id}`} className="app-header-search-result" onClick={handleResultSelection}>
-                        {surah.nameEnglish}
+
+              <div className="app-header-search-panel app-header-search-panel-inline" role="listbox" aria-label="Search results">
+                {isLoading && <p className="app-header-search-status">Searching...</p>}
+
+                {errorMessage ? <p className="app-header-search-error">{errorMessage}</p> : null}
+
+                {!isLoading && !errorMessage && !trimmedQuery ? (
+                  <p className="app-header-search-status">Type a keyword to search surahs and ayahs.</p>
+                ) : null}
+
+                {!isLoading && !errorMessage && trimmedQuery && surahMatches.length > 0 ? (
+                  <div className="app-header-search-group">
+                    <p className="app-header-search-group-title">Surahs</p>
+                    {surahMatches.map((surah) => (
+                      <Link
+                        key={surah.id}
+                        href={`/surah/${surah.id}`}
+                        className="app-header-search-result"
+                        onClick={handleResultSelection}
+                      >
+                        <span className="app-header-search-result-meta">
+                          Surah {surah.id} | {surah.nameEnglish}
+                        </span>
+                        <span className="app-header-search-result-text">{surah.nameArabic}</span>
                       </Link>
                     ))}
+                  </div>
+                ) : null}
+
+                {!isLoading && !errorMessage && trimmedQuery && results.length > 0 ? (
+                  <div className="app-header-search-group">
+                    <p className="app-header-search-group-title">Ayah Matches</p>
                     {results.map((result) => (
-                      <Link key={`${result.surahId}-${result.ayahNumber}`} href={`/surah/${result.surahId}?ayah=${result.ayahNumber}`} className="app-header-search-result" onClick={handleResultSelection}>
-                        {result.text}
+                      <Link
+                        key={`${result.surahId}-${result.ayahNumber}`}
+                        href={`/surah/${result.surahId}?ayah=${result.ayahNumber}`}
+                        className="app-header-search-result"
+                        onClick={handleResultSelection}
+                      >
+                        <span className="app-header-search-result-meta">
+                          Surah {result.surahId} | Ayah {result.ayahNumber}
+                        </span>
+                        <span className="app-header-search-result-text">{result.text}</span>
                       </Link>
                     ))}
-                </div>
-              )}
+                  </div>
+                ) : null}
+
+                {!isLoading && !errorMessage && trimmedQuery && surahMatches.length === 0 && results.length === 0 ? (
+                  <p className="app-header-search-status">No matches found.</p>
+                ) : null}
+              </div>
             </div>
-          </div>
+            </div>
+          </section>
         </div>
       )}
 
@@ -256,14 +331,13 @@ export default function AppHeader() {
       <nav className={`drawer ${isNavDrawerOpen ? "open" : ""}`}>
         <div className="drawer-header">
           <Link href="/" className="app-header-brand" onClick={() => setIsNavDrawerOpen(false)}>
-            <span>🌿</span>
+            <img src="/green-leaf.svg" alt="Quran Mazid logo" className="app-header-logo" />
             Quran Mazid
           </Link>
           <button
             className="drawer-close-button"
             onClick={() => setIsNavDrawerOpen(false)}
             aria-label="Close navigation menu"
-            style={{ background: "transparent", border: "none", color: "#fff", fontSize: "1.5rem", cursor: "pointer" }}
           >
             ✕
           </button>
@@ -273,7 +347,31 @@ export default function AppHeader() {
         </div>
       </nav>
 
-      <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+      <div
+        className={`drawer-backdrop ${isSettingsDrawerOpen ? "open" : ""}`}
+        onClick={() => setIsSettingsDrawerOpen(false)}
+      />
+
+      <aside className={`settings-drawer ${isSettingsDrawerOpen ? "open" : ""}`}>
+        <div className="drawer-header">
+          <div className="app-header-brand">
+            <img src="/green-leaf.svg" alt="Quran Mazid logo" className="app-header-logo" />
+            Settings
+          </div>
+          <button
+            className="drawer-close-button"
+            onClick={() => setIsSettingsDrawerOpen(false)}
+            aria-label="Close settings panel"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="drawer-content">
+          <div className="settings-panel-content">
+            <SettingsContent />
+          </div>
+        </div>
+      </aside>
     </>
   );
 }
