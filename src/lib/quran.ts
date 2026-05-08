@@ -1,9 +1,42 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+export interface Surah {
+  id: number;
+  nameArabic: string;
+  nameEnglish: string;
+  revelationType: string;
+  totalAyah: number | null;
+}
+
+export interface Ayah {
+  surahId: number;
+  ayahNumber: number;
+  arabicText: string;
+}
+
+export interface Translation {
+  surahId: number;
+  ayahNumber: number;
+  text: string;
+}
+
+export interface SurahContent {
+  surahId: number;
+  ayahNumber: number;
+  arabicText: string;
+  translationText: string;
+}
+
+interface QuranDataCache {
+  surahs: Surah[] | null;
+  ayat: Ayah[] | null;
+  translations: Translation[] | null;
+}
+
 // This cache object stores parsed dataset arrays so repeated calls do not
 // re-read and re-parse the same JSON files during a server process lifetime.
-const quranDataCache = {
+const quranDataCache: QuranDataCache = {
   surahs: null,
   ayat: null,
   translations: null,
@@ -19,11 +52,12 @@ const DATA_FILES = {
   translations: "translation.json",
 };
 
-// In development we bypass long-lived cache so dataset file edits are reflected immediately.
-const SHOULD_USE_DATA_CACHE = process.env.NODE_ENV === "production";
+// In development we still use cache to prevent OOM when multiple pre-fetches occur.
+// Dataset file edits will require a server restart to reflect in the UI.
+const SHOULD_USE_DATA_CACHE = true;
 
 // This helper safely converts values to positive integers for ID fields.
-function toPositiveInteger(value) {
+function toPositiveInteger(value: string | number | null | undefined): number | null {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1) {
     return null;
@@ -32,12 +66,12 @@ function toPositiveInteger(value) {
 }
 
 // This helper builds an absolute file path from the known dataset directory.
-function getDataFilePath(fileName) {
+function getDataFilePath(fileName: string): string {
   return path.join(QURAN_DATA_DIR, fileName);
 }
 
 // This helper reads and parses JSON files with clear error context.
-async function readJsonArray(fileName) {
+async function readJsonArray(fileName: string): Promise<any[]> {
   const absolutePath = getDataFilePath(fileName);
   const rawFileContent = await readFile(absolutePath, "utf8");
   const parsedValue = JSON.parse(rawFileContent);
@@ -51,7 +85,7 @@ async function readJsonArray(fileName) {
 }
 
 // This helper validates and normalizes one surah record.
-function normalizeSurahRecord(inputRecord) {
+function normalizeSurahRecord(inputRecord: any): Surah | null {
   const id = toPositiveInteger(inputRecord?.id);
   const nameArabic = typeof inputRecord?.nameArabic === "string" ? inputRecord.nameArabic.trim() : "";
   const nameEnglish = typeof inputRecord?.nameEnglish === "string" ? inputRecord.nameEnglish.trim() : "";
@@ -72,7 +106,7 @@ function normalizeSurahRecord(inputRecord) {
 }
 
 // This helper validates and normalizes one ayah record.
-function normalizeAyahRecord(inputRecord) {
+function normalizeAyahRecord(inputRecord: any): Ayah | null {
   const surahId = toPositiveInteger(inputRecord?.surahId);
   const ayahNumber = toPositiveInteger(inputRecord?.ayahNumber);
   const arabicText = typeof inputRecord?.arabicText === "string" ? inputRecord.arabicText.trim() : "";
@@ -90,7 +124,7 @@ function normalizeAyahRecord(inputRecord) {
 }
 
 // This helper validates and normalizes one translation record.
-function normalizeTranslationRecord(inputRecord) {
+function normalizeTranslationRecord(inputRecord: any): Translation | null {
   const surahId = toPositiveInteger(inputRecord?.surahId);
   const ayahNumber = toPositiveInteger(inputRecord?.ayahNumber);
   const text = typeof inputRecord?.text === "string" ? inputRecord.text.trim() : "";
@@ -108,12 +142,12 @@ function normalizeTranslationRecord(inputRecord) {
 }
 
 // This helper applies a normalizer and removes invalid entries.
-function normalizeArrayRecords(inputArray, normalizer) {
-  return inputArray.map(normalizer).filter(Boolean);
+function normalizeArrayRecords<T, R>(inputArray: T[], normalizer: (item: T) => R | null): R[] {
+  return inputArray.map(normalizer).filter((item): item is R => item !== null);
 }
 
 // This function loads, normalizes, and caches the surah list dataset.
-export async function getSurahList() {
+export async function getSurahList(): Promise<Surah[]> {
   if (SHOULD_USE_DATA_CACHE && quranDataCache.surahs) {
     return quranDataCache.surahs;
   }
@@ -130,7 +164,7 @@ export async function getSurahList() {
 }
 
 // This function loads, normalizes, and caches the ayat dataset.
-export async function getAyatList() {
+export async function getAyatList(): Promise<Ayah[]> {
   if (SHOULD_USE_DATA_CACHE && quranDataCache.ayat) {
     return quranDataCache.ayat;
   }
@@ -147,7 +181,7 @@ export async function getAyatList() {
 }
 
 // This function loads, normalizes, and caches the translation dataset.
-export async function getTranslationList() {
+export async function getTranslationList(): Promise<Translation[]> {
   if (SHOULD_USE_DATA_CACHE && quranDataCache.translations) {
     return quranDataCache.translations;
   }
@@ -167,7 +201,7 @@ export async function getTranslationList() {
 }
 
 // This function returns all ayat for one surah using a safe numeric ID parse.
-export async function getAyatBySurahId(surahIdInput) {
+export async function getAyatBySurahId(surahIdInput: string | number): Promise<Ayah[]> {
   const surahId = toPositiveInteger(surahIdInput);
   if (!surahId) {
     return [];
@@ -178,7 +212,7 @@ export async function getAyatBySurahId(surahIdInput) {
 }
 
 // This function returns all translations for one surah using a safe numeric ID parse.
-export async function getTranslationsBySurahId(surahIdInput) {
+export async function getTranslationsBySurahId(surahIdInput: string | number): Promise<Translation[]> {
   const surahId = toPositiveInteger(surahIdInput);
   if (!surahId) {
     return [];
@@ -189,7 +223,7 @@ export async function getTranslationsBySurahId(surahIdInput) {
 }
 
 // This function joins ayat and translation by surah and ayah number for rendering.
-export async function getSurahContent(surahIdInput) {
+export async function getSurahContent(surahIdInput: string | number): Promise<SurahContent[]> {
   const surahId = toPositiveInteger(surahIdInput);
   if (!surahId) {
     return [];
@@ -201,7 +235,7 @@ export async function getSurahContent(surahIdInput) {
   ]);
 
   // Map lookup keeps the join operation efficient for larger datasets.
-  const translationByAyahNumber = new Map(
+  const translationByAyahNumber = new Map<number, string>(
     translations.map((translation) => [translation.ayahNumber, translation.text]),
   );
 
@@ -214,7 +248,7 @@ export async function getSurahContent(surahIdInput) {
 }
 
 // This function performs case-insensitive translation search for API or UI use.
-export async function searchTranslationText(queryInput) {
+export async function searchTranslationText(queryInput: string): Promise<Translation[]> {
   const query = typeof queryInput === "string" ? queryInput.trim().toLowerCase() : "";
 
   // Empty queries return no results so callers can avoid noisy full dumps.
@@ -227,7 +261,7 @@ export async function searchTranslationText(queryInput) {
 }
 
 // This function clears cache entries, useful in tests or debug flows.
-export function clearQuranCache() {
+export function clearQuranCache(): void {
   quranDataCache.surahs = null;
   quranDataCache.ayat = null;
   quranDataCache.translations = null;

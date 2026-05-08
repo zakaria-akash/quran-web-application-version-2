@@ -1,11 +1,29 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+interface SurahRecord {
+  id: number;
+  nameArabic: string;
+  nameEnglish: string;
+}
+
+interface AyahRecord {
+  surahId: number;
+  ayahNumber: number;
+  arabicText: string;
+}
+
+interface TranslationRecord {
+  surahId: number;
+  ayahNumber: number;
+  text: string;
+}
+
 // This utility resolves dataset file paths from the project root directory.
-const resolvePath = (fileName) => path.join(process.cwd(), "public", "quran-json", fileName);
+const resolvePath = (fileName: string) => path.join(process.cwd(), "public", "quran-json", fileName);
 
 // This helper loads one dataset file and validates that it is a JSON array.
-async function loadArrayDataset(fileName) {
+async function loadArrayDataset<T>(fileName: string): Promise<T[]> {
   const filePath = resolvePath(fileName);
   const content = await readFile(filePath, "utf8");
   const parsed = JSON.parse(content);
@@ -14,11 +32,11 @@ async function loadArrayDataset(fileName) {
     throw new Error(`${fileName} must contain a top-level JSON array.`);
   }
 
-  return parsed;
+  return parsed as T[];
 }
 
 // This helper validates expected high-level counts for the full Quran dataset.
-function validateTopLevelCounts(surahs, ayat, translations) {
+function validateTopLevelCounts(surahs: SurahRecord[], ayat: AyahRecord[], translations: TranslationRecord[]) {
   if (surahs.length !== 114) {
     throw new Error(`Expected 114 surahs, found ${surahs.length}.`);
   }
@@ -33,16 +51,16 @@ function validateTopLevelCounts(surahs, ayat, translations) {
 }
 
 // This helper creates a stable key for ayah joins across datasets.
-function ayahKey(surahId, ayahNumber) {
+function ayahKey(surahId: number, ayahNumber: number) {
   return `${surahId}:${ayahNumber}`;
 }
 
 // This helper validates ayah/translation one-to-one correspondence and surah references.
-function validateCrossDatasetConsistency(surahs, ayat, translations) {
+function validateCrossDatasetConsistency(surahs: SurahRecord[], ayat: AyahRecord[], translations: TranslationRecord[]) {
   const surahIdSet = new Set(surahs.map((surah) => surah.id));
 
   // Every ayah must point to a known surah id and have a valid key.
-  const ayahKeySet = new Set();
+  const ayahKeySet = new Set<string>();
   for (const record of ayat) {
     if (!surahIdSet.has(record.surahId)) {
       throw new Error(`Ayah references unknown surahId=${record.surahId}.`);
@@ -68,9 +86,9 @@ function validateCrossDatasetConsistency(surahs, ayat, translations) {
 // This main QA check validates dataset health for release confidence.
 async function main() {
   const [surahs, ayat, translations] = await Promise.all([
-    loadArrayDataset("surah.json"),
-    loadArrayDataset("ayat.json"),
-    loadArrayDataset("translation.json"),
+    loadArrayDataset<SurahRecord>("surah.json"),
+    loadArrayDataset<AyahRecord>("ayat.json"),
+    loadArrayDataset<TranslationRecord>("translation.json"),
   ]);
 
   validateTopLevelCounts(surahs, ayat, translations);

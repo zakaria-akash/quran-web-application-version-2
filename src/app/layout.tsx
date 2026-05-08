@@ -1,13 +1,18 @@
+import type { Metadata } from "next";
 import "./globals.css";
 import { ReaderSettingsProvider } from "./settings-provider";
 import AppHeader from "./app-header";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Quran Web Application",
   description: "Quran Web Application",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body suppressHydrationWarning>

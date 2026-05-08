@@ -13,10 +13,17 @@ import {
   mergeSettingsWithDefaults,
   saveSettingsToStorage,
   readSettingsFromStorage,
+  Settings,
 } from "@/lib/settings";
 
+interface ReaderSettingsContextValue {
+  settings: Settings;
+  updateSettings: (partialUpdate: Partial<Settings>) => void;
+  resetSettings: () => void;
+}
+
 // This context carries reader settings and mutators to any client component in the app tree.
-const ReaderSettingsContext = createContext(null);
+const ReaderSettingsContext = createContext<ReaderSettingsContextValue | null>(null);
 
 // This default snapshot stays stable across server renders and initial hydration.
 const defaultSettingsSnapshot = Object.freeze(getDefaultSettings());
@@ -28,7 +35,7 @@ let currentSettingsSnapshot = defaultSettingsSnapshot;
 let hasHydratedFromStorage = false;
 
 // This listener registry powers a small local settings store for subscription updates.
-const settingsStoreListeners = new Set();
+const settingsStoreListeners = new Set<() => void>();
 
 // This helper notifies all subscribers after settings changes.
 function emitSettingsStoreChange() {
@@ -36,7 +43,7 @@ function emitSettingsStoreChange() {
 }
 
 // This subscribe hook is used by useSyncExternalStore for safe hydration behavior.
-function subscribeToSettingsStore(listener) {
+function subscribeToSettingsStore(listener: () => void) {
   settingsStoreListeners.add(listener);
   return () => {
     settingsStoreListeners.delete(listener);
@@ -78,7 +85,7 @@ export function useReaderSettings() {
 }
 
 // This provider centralizes settings persistence and applies CSS variables for global styling.
-export function ReaderSettingsProvider({ children }) {
+export function ReaderSettingsProvider({ children }: { children: React.ReactNode }) {
   // External-store hydration keeps first client render aligned with server-rendered markup.
   const settings = useSyncExternalStore(
     subscribeToSettingsStore,
@@ -92,7 +99,7 @@ export function ReaderSettingsProvider({ children }) {
   }, []);
 
   // This callback merges updates, persists them, and updates state in one path.
-  const updateSettings = useCallback((partialUpdate) => {
+  const updateSettings = useCallback((partialUpdate: Partial<Settings>) => {
     const mergedSettings = mergeSettingsWithDefaults({ ...currentSettingsSnapshot, ...partialUpdate });
     saveSettingsToStorage(mergedSettings);
 
@@ -116,7 +123,7 @@ export function ReaderSettingsProvider({ children }) {
     "--qwa-arabic-font-family": `"${settings.arabicFontFamily}", serif`,
     "--qwa-arabic-font-size": `${settings.arabicFontSize}px`,
     "--qwa-translation-font-size": `${settings.translationFontSize}px`,
-  }), [settings]);
+  } as React.CSSProperties), [settings]);
 
   // The memoized context value prevents avoidable downstream re-renders.
   const contextValue = useMemo(() => ({

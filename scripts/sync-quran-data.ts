@@ -1,6 +1,30 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+interface ApiAyah {
+  number: number;
+  numberInSurah: number;
+  text: string;
+}
+
+interface ApiSurah {
+  number: number;
+  name: string;
+  englishName: string;
+  revelationType: string;
+  ayahs: ApiAyah[];
+}
+
+interface ApiResponseData {
+  surahs: ApiSurah[];
+}
+
+interface ApiResponse {
+  code: number;
+  status: string;
+  data: ApiResponseData;
+}
+
 // This endpoint provides the complete Quran Arabic text in a structured Surah/Ayah format.
 const ARABIC_QURAN_ENDPOINT = "https://api.alquran.cloud/v1/quran/quran-uthmani";
 
@@ -11,13 +35,13 @@ const ENGLISH_QURAN_ENDPOINT = "https://api.alquran.cloud/v1/quran/en.asad";
 const OUTPUT_DIR = path.join(process.cwd(), "public", "quran-json");
 
 // This helper reads JSON from a URL and raises clear errors when the API is unavailable.
-async function fetchJson(url) {
+async function fetchJson(url: string): Promise<ApiResponseData> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Request failed for ${url} with status ${response.status}.`);
   }
 
-  const payload = await response.json();
+  const payload = (await response.json()) as ApiResponse;
   if (!payload || payload.code !== 200 || !payload.data) {
     throw new Error(`Unexpected payload shape from ${url}.`);
   }
@@ -26,7 +50,7 @@ async function fetchJson(url) {
 }
 
 // This helper converts edition metadata into the project's revelation-type label style.
-function normalizeRevelationType(value) {
+function normalizeRevelationType(value: string | null | undefined): string {
   if (typeof value !== "string") {
     return "";
   }
@@ -44,7 +68,7 @@ function normalizeRevelationType(value) {
 }
 
 // This helper builds the exact surah.json shape consumed by src/lib/quran.js.
-function buildSurahDataset(arabicSurahs) {
+function buildSurahDataset(arabicSurahs: ApiSurah[]) {
   return arabicSurahs.map((surah) => ({
     id: surah.number,
     nameArabic: surah.name,
@@ -55,7 +79,7 @@ function buildSurahDataset(arabicSurahs) {
 }
 
 // This helper builds the exact ayat.json shape consumed by src/lib/quran.js.
-function buildAyatDataset(arabicSurahs) {
+function buildAyatDataset(arabicSurahs: ApiSurah[]) {
   return arabicSurahs.flatMap((surah) =>
     surah.ayahs.map((ayah) => ({
       surahId: surah.number,
@@ -66,7 +90,7 @@ function buildAyatDataset(arabicSurahs) {
 }
 
 // This helper builds translation.json in the exact schema expected by existing helpers.
-function buildTranslationDataset(englishSurahs) {
+function buildTranslationDataset(englishSurahs: ApiSurah[]) {
   return englishSurahs.flatMap((surah) =>
     surah.ayahs.map((ayah) => ({
       surahId: surah.number,
@@ -77,7 +101,7 @@ function buildTranslationDataset(englishSurahs) {
 }
 
 // This helper validates that Arabic and translation editions are structurally compatible.
-function assertDatasetsAlign(arabicSurahs, englishSurahs) {
+function assertDatasetsAlign(arabicSurahs: ApiSurah[], englishSurahs: ApiSurah[]) {
   if (!Array.isArray(arabicSurahs) || !Array.isArray(englishSurahs)) {
     throw new Error("Surah datasets must be arrays.");
   }
@@ -108,7 +132,7 @@ function assertDatasetsAlign(arabicSurahs, englishSurahs) {
 }
 
 // This function writes one dataset file with stable pretty formatting for easy review.
-async function writeDatasetFile(fileName, data) {
+async function writeDatasetFile(fileName: string, data: any) {
   const absolutePath = path.join(OUTPUT_DIR, fileName);
   const json = `${JSON.stringify(data, null, 2)}\n`;
   await writeFile(absolutePath, json, "utf8");

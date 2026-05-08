@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSurahList, searchTranslationText } from "@/lib/quran";
 
 // This helper converts incoming query values into a normalized search string.
-function normalizeQuery(value) {
+function normalizeQuery(value: any): string {
   if (typeof value !== "string") {
     return "";
   }
@@ -10,9 +10,9 @@ function normalizeQuery(value) {
 }
 
 // This route searches translation text and returns ayah matches with Surah context.
-export async function POST(request) {
+export async function POST(request: Request) {
   // This variable stores parsed request body so invalid JSON can be handled separately.
-  let body;
+  let body: any;
 
   try {
     // Malformed JSON should be treated as a client-side bad request.

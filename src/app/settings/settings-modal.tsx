@@ -4,8 +4,13 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import SettingsContent from "./settings-content";
 
+interface SettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 // This modal hosts reader settings so users can update preferences without route changes.
-export default function SettingsModal({ isOpen, onClose }) {
+export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   useEffect(() => {
     if (!isOpen) {
       return undefined;
@@ -15,7 +20,7 @@ export default function SettingsModal({ isOpen, onClose }) {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    const onKeyDown = (event) => {
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
       }

@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SurahContent } from "@/lib/quran";
+
+interface AyahSliderProps {
+  ayat: SurahContent[];
+  initialAyahNumber?: number | null;
+}
 
 // This component provides manual-only slide navigation for Surah ayat.
-export default function AyahSlider({ ayat, initialAyahNumber = null }) {
+export default function AyahSlider({ ayat, initialAyahNumber = null }: AyahSliderProps) {
   // Current slide index tracks the visible ayah panel.
   const [activeIndex, setActiveIndex] = useState(() => {
     if (!Array.isArray(ayat) || ayat.length === 0 || !initialAyahNumber) {
@@ -20,7 +26,7 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }) {
   // Jump menu state controls the custom dropdown used for reliable cross-device width.
   const [isJumpMenuOpen, setIsJumpMenuOpen] = useState(false);
   const [jumpQuery, setJumpQuery] = useState("");
-  const jumpMenuRef = useRef(null);
+  const jumpMenuRef = useRef<HTMLDivElement>(null);
 
   // Fast lookup allows direct jumping to any ayah number from a compact control.
   const ayahIndexByNumber = useMemo(
@@ -69,7 +75,7 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }) {
     setActiveIndex((current) => (current === totalAyat - 1 ? totalAyat - 1 : current + 1));
   };
 
-  const jumpToAyahNumber = (requestedAyahNumber) => {
+  const jumpToAyahNumber = (requestedAyahNumber: number) => {
     const nextIndex = ayahIndexByNumber.get(requestedAyahNumber);
 
     if (typeof nextIndex === "number") {
@@ -79,7 +85,7 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }) {
     }
   };
 
-  const handleJumpInputChange = (event) => {
+  const handleJumpInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setJumpQuery(event.target.value);
     setIsJumpMenuOpen(true);
   };
@@ -88,7 +94,7 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }) {
     setIsJumpMenuOpen(true);
   };
 
-  const handleJumpInputKeyDown = (event) => {
+  const handleJumpInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
 
@@ -123,18 +129,18 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }) {
       return undefined;
     }
 
-    const onPointerDown = (event) => {
+    const onPointerDown = (event: PointerEvent) => {
       const wrapper = jumpMenuRef.current;
       if (!wrapper) {
         return;
       }
 
-      if (!wrapper.contains(event.target)) {
+      if (!wrapper.contains(event.target as Node)) {
         setIsJumpMenuOpen(false);
       }
     };
 
-    const onKeyDown = (event) => {
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsJumpMenuOpen(false);
       }

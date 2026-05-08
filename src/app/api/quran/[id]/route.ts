@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSurahContent, getSurahList } from "@/lib/quran";
 
 // This helper validates the dynamic route id before any data work is done.
-function parseSurahId(value) {
+function parseSurahId(value: any): number | null {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1) {
     return null;
@@ -11,7 +11,10 @@ function parseSurahId(value) {
 }
 
 // This route returns all ayat for a specific Surah with joined translation text.
-export async function GET(_request, context) {
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
     // Params can be async in this Next.js version, so we await them safely.
     const params = await context.params;

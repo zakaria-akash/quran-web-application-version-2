@@ -1,14 +1,15 @@
 {
-  "name": "quran-web-application",
+  "name": "quran-web-application-version-2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:safe": "cross-env NEXT_DISABLE_TURBOPACK=1 NODE_OPTIONS=--max-old-space-size=4096 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sync:quran": "node scripts/sync-quran-data.mjs",
-    "qa:check": "node scripts/phase5-qa-check.mjs"
+    "sync:quran": "tsx scripts/sync-quran-data.ts",
+    "qa:check": "tsx scripts/phase5-qa-check.ts"
   },
   "dependencies": {
     "next": "16.2.4",
@@ -17,8 +18,14 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/node": "^25.6.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "cross-env": "^7.0.3"
   }
 }

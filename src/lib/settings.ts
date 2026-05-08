@@ -1,26 +1,46 @@
 // This key name is centralized so all settings reads/writes use one storage slot.
 const SETTINGS_STORAGE_KEY = "qwa-reader-settings";
 
+export interface Settings {
+  arabicFontFamily: string;
+  arabicFontSize: number;
+  translationFontSize: number;
+}
+
+export interface SettingsBounds {
+  min: number;
+  max: number;
+}
+
+export interface ProjectSettingsConstraints {
+  storageKey: string;
+  defaults: Settings;
+  bounds: {
+    arabic: SettingsBounds;
+    translation: SettingsBounds;
+  };
+}
+
 // These defaults define the baseline reading experience when no saved settings exist.
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: Settings = {
   arabicFontFamily: "Amiri",
   arabicFontSize: 36,
   translationFontSize: 18,
 };
 
 // These bounds keep user-controlled sizes readable and prevent extreme values.
-const SIZE_BOUNDS = {
+const SIZE_BOUNDS: { arabic: SettingsBounds; translation: SettingsBounds } = {
   arabic: { min: 20, max: 72 },
   translation: { min: 12, max: 36 },
 };
 
 // This helper verifies browser context so server rendering never touches localStorage.
-function isBrowserEnvironment() {
+function isBrowserEnvironment(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
 // This helper clamps numeric size values into safe bounds.
-function clampSize(value, min, max, fallback) {
+function clampSize(value: any, min: number, max: number, fallback: number): number {
   const numericValue = Number(value);
   if (!Number.isFinite(numericValue)) {
     return fallback;
@@ -30,7 +50,7 @@ function clampSize(value, min, max, fallback) {
 }
 
 // This helper converts unknown input into a trimmed string with fallback support.
-function sanitizeString(value, fallback) {
+function sanitizeString(value: any, fallback: string): string {
   if (typeof value !== "string") {
     return fallback;
   }
@@ -40,12 +60,12 @@ function sanitizeString(value, fallback) {
 }
 
 // This function returns a fresh default object so callers cannot mutate module state.
-export function getDefaultSettings() {
+export function getDefaultSettings(): Settings {
   return { ...DEFAULT_SETTINGS };
 }
 
 // This function normalizes an unknown object into a valid settings payload.
-export function sanitizeSettings(inputSettings) {
+export function sanitizeSettings(inputSettings: any): Settings {
   const safeInput = inputSettings && typeof inputSettings === "object" ? inputSettings : {};
   const defaults = getDefaultSettings();
 
@@ -67,7 +87,7 @@ export function sanitizeSettings(inputSettings) {
 }
 
 // This function merges partial overrides over defaults and then validates everything.
-export function mergeSettingsWithDefaults(partialSettings) {
+export function mergeSettingsWithDefaults(partialSettings: Partial<Settings> | null | undefined): Settings {
   const merged = {
     ...getDefaultSettings(),
     ...(partialSettings && typeof partialSettings === "object" ? partialSettings : {}),
@@ -77,7 +97,7 @@ export function mergeSettingsWithDefaults(partialSettings) {
 }
 
 // This function reads settings from localStorage and returns validated values.
-export function readSettingsFromStorage() {
+export function readSettingsFromStorage(): Settings {
   if (!isBrowserEnvironment()) {
     return getDefaultSettings();
   }
@@ -97,7 +117,7 @@ export function readSettingsFromStorage() {
 }
 
 // This function saves validated settings into localStorage and returns saved payload.
-export function saveSettingsToStorage(inputSettings) {
+export function saveSettingsToStorage(inputSettings: Partial<Settings>): Settings {
   const normalizedSettings = mergeSettingsWithDefaults(inputSettings);
 
   if (!isBrowserEnvironment()) {
@@ -114,7 +134,7 @@ export function saveSettingsToStorage(inputSettings) {
 }
 
 // This export exposes constants for UI components that build settings controls.
-export const settingsConstraints = {
+export const settingsConstraints: ProjectSettingsConstraints = {
   storageKey: SETTINGS_STORAGE_KEY,
   defaults: getDefaultSettings(),
   bounds: {

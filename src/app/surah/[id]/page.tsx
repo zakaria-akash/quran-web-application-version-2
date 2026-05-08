@@ -16,7 +16,7 @@ export async function generateStaticParams() {
 }
 
 // This helper parses and validates the route id parameter into a positive integer.
-function parseRouteSurahId(rawId) {
+function parseRouteSurahId(rawId: string | undefined): number | null {
   const parsed = Number(rawId);
   if (!Number.isInteger(parsed) || parsed < 1) {
     return null;
@@ -25,7 +25,7 @@ function parseRouteSurahId(rawId) {
 }
 
 // This helper parses optional ayah query values used for direct navigation from search.
-function parseRouteAyahNumber(rawAyah) {
+function parseRouteAyahNumber(rawAyah: string | string[] | undefined): number | null {
   const parsed = Number(rawAyah);
   if (!Number.isInteger(parsed) || parsed < 1) {
     return null;
@@ -33,8 +33,13 @@ function parseRouteAyahNumber(rawAyah) {
   return parsed;
 }
 
+interface SurahDetailPageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ ayah?: string }>;
+}
+
 // This page renders one Surah with Arabic ayat and English translation.
-export default async function SurahDetailPage({ params, searchParams }) {
+export default async function SurahDetailPage({ params, searchParams }: SurahDetailPageProps) {
   // Params can be async in the App Router, so we await before reading id.
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;

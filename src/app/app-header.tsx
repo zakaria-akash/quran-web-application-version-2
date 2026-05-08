@@ -3,22 +3,23 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import SettingsModal from "./settings/settings-modal";
+import { Surah, Translation } from "@/lib/quran";
 
 // This debounce value keeps the global search responsive without flooding the API.
 const HEADER_SEARCH_DEBOUNCE_MS = 300;
 
 // This helper normalizes unknown payload values into predictable arrays.
-function toArray(value) {
+function toArray<T>(value: any): T[] {
   return Array.isArray(value) ? value : [];
 }
 
 // This helper strips punctuation and spacing so transliterated names can match more loosely.
-function normalizeSearchText(value) {
+function normalizeSearchText(value: string | null | undefined): string {
   return typeof value === "string" ? value.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/g, "") : "";
 }
 
 // This helper computes a small edit distance for short surah-name comparisons.
-function getEditDistance(leftText, rightText) {
+function getEditDistance(leftText: string, rightText: string): number {
   const left = normalizeSearchText(leftText);
   const right = normalizeSearchText(rightText);
 
@@ -47,7 +48,7 @@ function getEditDistance(leftText, rightText) {
 }
 
 // This helper gives surah-name search a little flexibility for common transliterations.
-function matchSurahQuery(query, surah) {
+function matchSurahQuery(query: string, surah: Surah): boolean {
   const normalizedQuery = normalizeSearchText(query);
   const normalizedEnglishName = normalizeSearchText(surah.nameEnglish);
   const normalizedArabicName = normalizeSearchText(surah.nameArabic);
@@ -69,13 +70,13 @@ export default function AppHeader() {
   const [query, setQuery] = useState("");
 
   // Surah list is cached client-side so name searches can work without translation hits.
-  const [surahs, setSurahs] = useState([]);
+  const [surahs, setSurahs] = useState<Surah[]>([]);
 
   // Results state stores matched ayat references returned by /api/search.
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<Translation[]>([]);
 
   // Surah name matches are shown alongside translation matches.
-  const [surahMatches, setSurahMatches] = useState([]);
+  const [surahMatches, setSurahMatches] = useState<Surah[]>([]);
 
   // Loading state powers subtle progress feedback while searching.
   const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +91,7 @@ export default function AppHeader() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   // This ref tracks the search shell so outside-click close behavior is reliable.
-  const searchShellRef = useRef(null);
+  const searchShellRef = useRef<HTMLDivElement>(null);
 
   // Trimmed query avoids unnecessary requests for whitespace-only input.
   const trimmedQuery = useMemo(() => query.trim(), [query]);
@@ -107,7 +108,7 @@ export default function AppHeader() {
         }
 
         const payload = await response.json();
-        setSurahs(toArray(payload?.surahs));
+        setSurahs(toArray<Surah>(payload?.surahs));
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
@@ -122,13 +123,13 @@ export default function AppHeader() {
 
   // Close dropdown only when clicking outside, so link clicks inside the panel are not interrupted.
   useEffect(() => {
-    function handlePointerDown(event) {
+    function handlePointerDown(event: PointerEvent) {
       const shell = searchShellRef.current;
       if (!shell) {
         return;
       }
 
-      if (!shell.contains(event.target)) {
+      if (!shell.contains(event.target as Node)) {
         setIsFocused(false);
       }
     }
@@ -179,7 +180,7 @@ export default function AppHeader() {
 
         // Only first results are shown to keep header dropdown compact.
         const payload = await response.json();
-        setResults(toArray(payload?.results).slice(0, 8));
+        setResults(toArray<Translation>(payload?.results).slice(0, 8));
       } catch (error) {
         // Abort is expected during fast typing and should not show an error message.
         if (error instanceof DOMException && error.name === "AbortError") {
