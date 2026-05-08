@@ -56,10 +56,8 @@ body {
     display: flex;
     width: var(--sidebar-width);
     border-right: 1px solid rgba(255, 255, 255, 0.12);
-    overflow-y: auto;
-      /* Ensure scrollable */
-      height: calc(100vh - var(--header-height));
-      /* Constrain to viewport */
+    overflow: hidden;
+    height: calc(100vh - var(--header-height));
   }
 
   .app-main-content-center {
@@ -74,7 +72,7 @@ body {
     display: flex;
     width: var(--settings-width);
     border-left: 1px solid rgba(255, 255, 255, 0.12);
-    overflow-y: auto;
+    overflow: hidden;
     height: calc(100vh - var(--header-height));
   }
 }
@@ -374,6 +372,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
 }
 
 .surah-sidebar-header {
@@ -395,6 +394,7 @@ body {
 .surah-sidebar-content {
   flex: 1;
   overflow-y: auto;
+  width: 100%;
 }
 
 .surah-sidebar-item {
@@ -406,6 +406,7 @@ body {
   color: #aab8d4;
   border-left: 3px solid transparent;
   transition: all 0.2s;
+  width: 100%;
 }
 
 .surah-sidebar-item:hover {
@@ -997,6 +998,23 @@ body {
 
 /* Desktop-only thin dark scrollbars for sidebar/settings bars. */
 @media (min-width: 1281px) {
+  .surah-sidebar,
+  .surah-sidebar-header,
+  .surah-sidebar-search,
+  .surah-sidebar-content,
+  .surah-sidebar-item {
+    width: 100%;
+    max-width: 100%;
+    align-self: stretch;
+  }
+
+  .surah-sidebar-header {
+    padding-inline: 12px;
+  }
+
+  .surah-sidebar-item {
+    padding-inline: 12px;
+  }
 
   .app-main-content-sidebar,
   .app-main-content-settings,

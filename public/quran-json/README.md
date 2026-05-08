@@ -1,20 +1,61 @@
-# Quran JSON Dataset (Phase 1 Baseline)
+# Quran Web Application 2.0 - Quran JSON Dataset
 
-This folder stores static Quran dataset files used by both UI pages and API routes.
+This folder contains the static Quran dataset used by both the UI and API routes.
 
-Current files:
-- `surah.json`: Surah metadata list
-- `ayat.json`: Arabic ayat records
-- `translation.json`: English translation records
+## Files
 
-Current status:
-- The repository now includes a **Phase 1 starter dataset** (Surah 1 / Al-Fatihah)
-- In Phase 2, this should be replaced with the full 114-surah dataset before complete UI/API rollout
+- `surah.json`
+  - Surah metadata
 
-Minimum contracts:
-- Surah record: `id`, `nameArabic`, `nameEnglish`
-- Ayah record: `surahId`, `ayahNumber`, `arabicText`
-- Translation record: `surahId`, `ayahNumber`, `text`
+- `ayat.json`
+  - Arabic ayah records
 
-Join rule:
-- Ayah and translation rows are matched by (`surahId`, `ayahNumber`)
+- `translation.json`
+  - English translation records
+
+## Current Dataset Status
+
+- The repository currently contains the full production dataset
+- Surah count: 114
+- Ayah count: 6236
+- Translation count: 6236
+
+## Record Contracts
+
+### Surah record
+
+- `id`
+- `nameArabic`
+- `nameEnglish`
+- `revelationType`
+- `totalAyah`
+
+### Ayah record
+
+- `surahId`
+- `ayahNumber`
+- `arabicText`
+
+### Translation record
+
+- `surahId`
+- `ayahNumber`
+- `text`
+
+## Join Rule
+
+- Ayah and translation records are matched by `(surahId, ayahNumber)`
+
+## Dataset Maintenance
+
+To refresh the dataset:
+
+```bash
+npm run sync:quran
+```
+
+To validate the dataset:
+
+```bash
+npm run qa:check
+```

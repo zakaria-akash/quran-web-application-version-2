@@ -1,120 +1,88 @@
+# Quran Web Application 2.0 - Overview
 
-# 📘 Quran Web Application (QWA) — Overview
+Quran Web Application 2.0 is a responsive Quran reader built with Next.js App Router and TypeScript. It uses a local Quran JSON dataset, an internal API layer, and a desktop-first reading layout that keeps navigation and reader settings visible on large screens.
 
-A minimal and production-ready **Quran Web Application (QWA)** built using **Next.js (Frontend + SSG)** and a minimal **Node.js backend** inside the same project directory, running on the **same port**, styled using **Tailwind CSS**, and fully implemented with **JavaScript**.
+## Product Goals
 
-Theme Colors:
-- **Black** (#0A0A0A)
-- **Navy Blue** (#0D1B2A)
+- Provide a clean and stable Quran reading experience
+- Open directly into reading mode instead of a marketing-style landing page
+- Keep the data layer simple by using local JSON files
+- Persist reader preferences in the browser
+- Support both desktop and mobile reading with route-consistent navigation
 
-This app is intentionally minimal and focused only on the required features — nothing extra.
+## What the App Currently Does
 
----
+- Redirects `/` to `/surah/1` so Al-Fatiha is the first view
+- Displays all 114 Surahs in a searchable sidebar
+- Renders each Surah as a continuous list of Arabic ayah text and English translation
+- Supports global search by Surah name and translation text
+- Provides an always-open desktop settings panel
+- Provides mobile navigation and settings drawers
+- Saves reader typography preferences to `localStorage`
 
-## 🎯 Project Goals
-- Provide a clean and responsive Quran reading interface.
-- Use **Next.js SSG** for fast and SEO‑friendly content delivery.
-- Keep backend minimal (Node.js API routes).
-- Manage settings using **localStorage**.
-- Use a **simple Quran JSON database** from GitHub.
+## Current UX Model
 
----
+### Desktop
 
-## 🧩 Core Features (MVP)
-### ✅ Surah List Page
-Display all **114 surahs** with:
-- Arabic name
-- English name
-- Surah number
+- Left sidebar: searchable Surah list
+- Center column: active Surah reader
+- Right sidebar: always-open settings panel
 
-### ✅ Ayat Page
-For each surah:
-- Arabic text
-- English translation
-- Responsive and clean layout
+### Mobile and Tablet
 
-### ✅ Search
-Allow users to search **English translations** across all ayat.
+- Single-column reader
+- Navigation opens from a left drawer
+- Settings open from a right drawer
+- Search opens in a modal
 
-### ✅ Settings Panel (Sidebar)
-- Arabic font selection (minimum 2 fonts)
-- Arabic font size adjustment
-- Translation font size adjustment
-- Persist settings using **localStorage**
+## Core Routes
 
----
+- `/`
+  - Redirects to `/surah/1`
 
-## 🏗 Tech Stack
-### Frontend
-- **Next.js 14+** (App Router or Pages Router)
-- **Static Site Generation (SSG)**
-- **React + JavaScript**
-- **Tailwind CSS v3+**
+- `/surah/[id]`
+  - Main reader route
 
-### Backend (same port)
-- **Node.js** using:
-  - Next.js API Routes **OR**
-  - Hono/Express custom server (optional)
+- `/settings`
+  - Dedicated settings page
 
-### Data
-- Quran JSON dataset (from GitHub)
-- No need for MongoDB unless expanding later
+- `/api/quran`
+- `/api/quran/[id]`
+- `/api/search`
 
-### Storage
-- Browser localStorage for settings
+## Current Tech Stack
 
----
+- Next.js 16.2.4
+- React 19.2.4
+- TypeScript
+- ESLint 9
+- Custom CSS
+- Local JSON data under `public/quran-json`
 
-## 📂 Detailed Folder Structure
-```
-/qwa-project
-│
-├── app/                      # Next.js App Router (UI + Pages)
-│   ├── layout.js            # Global layout, theme, header
-│   ├── page.js              # Surah List Page
-│   │
-│   ├── surah/               # Dynamic Ayat Pages
-│   │   └── [id]/
-│   │       └── page.js      # Ayat display per Surah
-│   │
-│   ├── search/
-│   │   └── page.js          # Search UI
-│   │
-│   ├── settings/
-│   │   └── page.js          # Settings panel (font/type controls)
-│   │
-│   └── api/                 # Backend API Routes
-│       ├── quran/           # Surah/Ayat data
-│       │   ├── route.js
-│       │   └── [id]/route.js
-│       │
-│       └── search/route.js  # Search API handler
-│
-├── lib/                     # Utility helpers
-│   ├── quran.js             # Data loaders
-│   └── settings.js          # LocalStorage sync helpers
-│
-├── public/
-│   └── quran-json/          # Quran dataset (surahs, ayat, translations)
-│
-├── styles/
-│   └── globals.css          # Tailwind + custom styles
-│
-├── tailwind.config.js       # Tailwind config
-├── next.config.js           # Next.js configuration
-├── package.json
-└── README.md
-```
+## Architecture Summary
 
----
+- `src/lib/quran.ts` loads and normalizes dataset files
+- `src/lib/settings.ts` manages validation and persistence for reader settings
+- `src/app/settings-provider.tsx` provides app-wide settings state
+- `src/app/api/*` exposes normalized data and search routes
+- `src/app/globals.css` contains the active visual system and responsive behavior
 
-## 🚀 Final Deliverable
-A clean, modern Next.js Quran reader with:
-- Fast SSG pages
-- Beautiful dark UI
-- Local settings persistence
-- Minimal but effective backend
+## Important Current Notes
 
-Nothing unnecessary. Everything functional.
+- The active reader component is `src/app/surah/[id]/ayah-list.tsx`
+- `src/app/surah/[id]/ayah-slider.tsx` remains in the repo but is not the current main reading experience
+- Search ayah results include an `ayah` query parameter, but the active full-list reader does not yet auto-scroll to that ayah
 
----
+## Non-Goals
+
+- Audio recitation
+- Tafsir
+- Authentication
+- Database integration
+- Multi-translation switching
+
+## Intended Audience for This Repo
+
+- Developers extending the reader
+- Maintainers updating Quran data
+- Reviewers validating UI, route, and data behavior

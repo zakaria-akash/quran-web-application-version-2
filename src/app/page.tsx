@@ -1,40 +1,6 @@
-import Link from "next/link";
-import { getSurahList } from "@/lib/quran";
+import { redirect } from "next/navigation";
 
-// This page is a Server Component that fetches Surah metadata at build/request time.
-export default async function Home() {
-  // The data helper normalizes and sorts surah records for predictable rendering.
-  const surahList = await getSurahList();
-
-  return (
-    <main className="surah-list-page">
-      {/* This heading establishes the page purpose for users and accessibility tools. */}
-      <h1 className="surah-list-title">The Holy Quran</h1>
-
-      {/* This supporting text clarifies what content is shown in the list below. */}
-      <p className="surah-list-subtitle">
-        Select a Surah to begin reading and studying the Quran with translations.
-      </p>
-
-      {/* This grid renders one card per surah and links to the dynamic surah route. */}
-      <section className="surah-grid" aria-label="Surah list">
-        {surahList.map((surah) => (
-          <Link key={surah.id} href={`/surah/${surah.id}`} className="surah-card">
-            {/* The number gives quick positional context for each surah. */}
-            <span className="surah-number">{surah.id}</span>
-
-            <div className="surah-card-body">
-              <span className="surah-name-english">{surah.nameEnglish}</span>
-              <span className="surah-card-meta">
-                {surah.revelationType} • {surah.totalAyah} Ayahs
-              </span>
-            </div>
-
-            {/* Arabic and English names are both shown to match the project requirements. */}
-            <span className="surah-name-arabic">{surah.nameArabic}</span>
-          </Link>
-        ))}
-      </section>
-    </main>
-  );
+// The root route forwards directly to Al-Fatiha so the app opens in the reader.
+export default function Home() {
+  redirect("/surah/1");
 }

@@ -1,111 +1,81 @@
-# Technical Assessment
+# Quran Web Application 2.0 - Current Version Notes
 
-## Quran Web Application
+This document records the current implemented version of the project and supersedes the earlier JavaScript-era planning assumptions.
 
-## Task
+## Version Identity
 
-#### You need to clone the UI of this page (https://quranmazid.com/1) and implement the features
+- Project name: Quran Web Application 2.0
+- Codebase style: TypeScript
+- UI direction: responsive dark reader with desktop side panels and mobile drawers
 
-#### which are mentioned in detail below. Study the reference site carefully for layout, typography,
+## Current Feature Set
 
-#### and interaction patterns before starting.
+- Direct entry into Al-Fatiha on app load
+- Full Surah sidebar navigation
+- Continuous Surah reader with Arabic and English text
+- Global modal search
+- Always-open desktop settings panel
+- Mobile navigation drawer
+- Mobile settings drawer
+- Reader setting persistence
+- Internal JSON-backed API routes
 
-## Technical Requirements
+## Current Non-Features
 
-## Tech Stack
+- No audio playback
+- No tafsir
+- No user accounts
+- No external database
+- No translation switching
 
-```
-Layer Technology
-```
-**Language** (^) Must use TypeScript
-**Backend** (^) Node.js / Hono-Bun
-**Frontend** (^) Next.js with Static Site Generation (SSG)
-**Styling** (^) Tailwind CSS
-**Database** (^) Any Quran JSON/SQLite database sourced from GitHub
-**Audio Source** (^) Any free Quran recitation API
+## Important UI Decisions
 
-## Key UI Elements to Clone
+### Desktop
 
-```
-Element Description
-```
-**Assets** (^) Collect All required assets (fonts,img etc) from reff. site
-**Icon Sidebar** (^) Left icon-sidebar
-**Surah Sidebar** (^) Scrollable list of all 114 surahs with Arabic name, English name,
+- Left Surah sidebar remains visible
+- Reader content fills the center column
+- Right settings panel remains visible and no longer collapses
 
-##### and surah number.
+### Mobile
 
-**Ayah Display** (^) Each verse shown with Arabic text (right-aligned) and English
+- Drawer-based navigation
+- Drawer-based settings access
+- Search modal overlay
 
-##### translation below. Verse number displayed.
+## Migration Notes
 
-**Audio Playback** (^) Play/pause button per ayah or full surah playback. Use any free
+The project previously had documentation written for:
 
-##### Quran audio API.
+- JavaScript-only implementation
+- a Surah-grid homepage
+- Tailwind-led styling expectations
+- earlier UI planning states
 
-**Font Settings Panel** (^) Sidebar or modal with: Arabic font selector (min 2 fonts), Arabic
+The current implementation differs in several important ways:
 
-##### font size slider, Translation font size slider.
+- TypeScript is now the actual source language
+- `/` redirects to `/surah/1`
+- the active reader is a full ayah list, not the old slider flow
+- desktop settings are always open
+- responsive behavior is implemented with the current CSS system in `src/app/globals.css`
 
-**Search** (^) Search bar to find ayahs by translation text across all surahs.
-**Dark Theme** (^) Dark color scheme matching the reference design.
-**Responsive Design** Also Clone the Mobile UI part for above
+## Current Files That Define the Product
 
+- `src/app/layout.tsx`
+- `src/app/page.tsx`
+- `src/app/app-header.tsx`
+- `src/app/surah-sidebar.tsx`
+- `src/app/desktop-settings.tsx`
+- `src/app/surah/[id]/page.tsx`
+- `src/app/surah/[id]/ayah-list.tsx`
+- `src/app/settings-provider.tsx`
+- `src/lib/quran.ts`
+- `src/lib/settings.ts`
 
-### Required Features
+## Verification Snapshot
 
-##### Note: Collect All required assets (fonts,img etc) from reff. site.
+At the time this version note was updated:
 
-##### 1. Left Icon sidebar
-
-- Clone the left icon sidebar
-
-##### 1. Surah sidebar
-
-- Display all 114 surahs with surah number, Arabic name, and English name/translation.
-- Clicking a surah navigates to its Ayah page.
-- Surah list should be visible as a sidebar on desktop and as a collapsible drawer/menu on mobile.
-
-##### 2. Ayah Page (Surah Reader)
-
-- Show all verses of the selected surah.
-- Each ayah displays: verse number, Arabic text (right-aligned, proper Quranic font), and English translation
-    (Saheeh International or similar).
-- Surah header with surah name, number of ayahs, and revelation place (Makkah/Madinah).
-
-##### 3. Audio Playback
-
-- Play button for each individual ayah to hear its recitation.
-- Use any freely available Quran audio API or CDN.
-
-##### 4. Search Functionality
-
-- Allow users to search ayahs by Arabic or English translation text.
-
-##### 5. Font Settings Panel
-
-- Accessible via a settings icon/button in the header or sidebar.
-- Arabic Font Selection: minimum 2 Arabic font options (e.g. KFGQ, Amiri, Scheherazade).
-- Arabic Font Size: adjustable slider/stepper.
-- Translation Font Size: adjustable slider/stepper.
-- All settings must persist across sessions using localStorage.
-
-##### 6. UI & Responsiveness
-
-- Dark theme UI matching the QuranMazid reference design.
-- Fully responsive: must work well on mobile, tablet, and desktop.
-- Clean, professional typography with proper Arabic text rendering.
-
-## Submission Instructions
-
-#### Reply in the same email thread. Do not send a separate email. Submit -
-
-**1.** Public GitHub Repository (Front+Backend) Link (must be public and accessible)
-**2.** Live Demo Link deployed on Vercel or Netlify (verify in incognito before submitting)
-**3.** Screen Recording showing all features working (maximum 5 minutes)
-
-**4.** (^) Code quality, TypeScript usage, component structure, and commit history will
-
-##### be evaluated.
-
-
+- Build passes
+- Dataset QA passes
+- Lint runs with only image optimization warnings in the header component

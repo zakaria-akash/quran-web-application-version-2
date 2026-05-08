@@ -1,373 +1,260 @@
-# Quran Web Application (QWA)
+# Quran Web Application 2.0
 
 Live application:
 
 - <https://quran-web-application.vercel.app/>
 
-A production-ready Quran reader built on Next.js App Router (JavaScript only), with:
+Quran Web Application 2.0 is a production-ready Quran reader built with Next.js App Router and TypeScript. It uses a local Quran JSON dataset, server-side API routes, and a responsive reading layout with a permanent desktop sidebar and desktop settings panel.
 
-- complete Surah index (114)
-- Arabic ayah text + English translation
-- global header search (Surah name and translation text) integrated globally across all routes.
-- click-through deep-linking to exact ayah panels.
-- persistent reader personalization (font family and sizes).
-- fully responsive UI (3-column desktop / single-column mobile).
-- dark visual system (Black + Navy with Green accents).
+## Current Product Summary
 
-This document is the technical handbook for developers, maintainers, and reviewers.
+- Root route redirects directly to Al-Fatiha at `/surah/1`
+- Complete Surah index of all 114 Surahs
+- Surah reader page with full Arabic ayah text and English translation
+- Global header search for Surah names and translation text
+- Desktop 3-column layout: Surah sidebar, reader content, settings panel
+- Mobile drawer navigation and mobile settings drawer
+- Reader typography settings persisted in `localStorage`
+- TypeScript codebase across app, API, scripts, and utilities
 
-## 1. Product Scope
+## Scope
 
-### In Scope (MVP)
+### In Scope
 
-- Surah list page
-- Surah detail reading page
-- Manual ayah slider with Prev/Next
-- Global search in header
- 	- Surah name matching (with light fuzzy matching)
- 	- Translation text matching
-- Reader settings persisted in localStorage
-- Minimal backend API routes in the same Next.js app
+- Responsive Surah reader
+- Search by Surah name and translation text
+- Reader settings:
+  - Arabic font family
+  - Arabic font size
+  - Translation font size
+- Static JSON dataset management
+- Internal API routes for Surah list, Surah content, and search
 
 ### Out of Scope
 
 - Audio recitation
 - Tafsir
-- User auth/accounts
+- User accounts
 - Database integration
-- Multi-translation support
+- Multiple translation packs
 
-## 2. Technology Stack
+## Technology Stack
 
-- Next.js 16.2.4 (App Router)
+- Next.js 16.2.4
 - React 19.2.4
-- JavaScript (no TypeScript)
-- ESLint 9 + eslint-config-next
-- Static JSON dataset under public/quran-json
+- TypeScript
+- ESLint 9
+- Custom CSS in `src/app/globals.css`
+- Local JSON dataset under `public/quran-json`
+- Utility scripts executed with `tsx`
 
-## 3. Architecture at a Glance
+Note:
 
-### High-Level Flow
+- `tailwindcss` is installed in the project, but the current UI is primarily implemented with custom global CSS rather than an active Tailwind utility workflow.
 
-1. UI pages and header run in Next.js App Router.
-2. Data is stored in local JSON files.
-3. Shared data helpers normalize and join datasets.
-4. API routes expose normalized responses for search and content retrieval.
-5. Reader settings are managed via a client-side provider and persisted in localStorage.
-
-### Runtime Characteristics
-
-- Same-port frontend + backend (single Next.js deployment)
-- API routes under src/app/api
-- Global header search available on all pages
-- Surah detail supports deep-linking by query parameter:
- 	- /surah/:id?ayah=:number
-
-## 4. Repository Structure
-
-```text
-quran-web-application/
- public/
-  quran-json/
-   ayat.json
-   surah.json
-   translation.json
-   README.md
-
- scripts/
-  sync-quran-data.mjs
-  phase5-qa-check.mjs
-
- src/
-  app/
-   api/
-    quran/
-     route.js
-     [id]/
-      route.js
-    search/
-     route.js
-   surah/
-    [id]/
-     page.js
-     ayah-slider.js
-     not-found.js
-   settings/
-    page.js
-   app-header.js
-   globals.css
-   layout.js
-   page.js
-   settings-provider.js
-   favicon.ico
-
-  lib/
-   quran.js
-   settings.js
-
- QA_SIGNOFF.md
- WorkFlow.md
- QWA_Overview.md
- QWA_FrontendGuide.md
- QWA_BackendGuide.md
- package.json
- README.md
-```
-
-## 5. File-by-File Code Flow
-
-This section describes how each major file participates in request flow and UI behavior.
+## Current Architecture
 
 ### App Shell
 
-- src/app/layout.js
- 	- Defines app metadata.
- 	- Wraps the whole app with ReaderSettingsProvider.
- 	- Renders global shell layout:
-  		- AppHeader (top)
-  		- page content
-  		- footer
+- `src/app/layout.tsx`
+  - Global metadata
+  - Wraps app with `ReaderSettingsProvider`
+  - Renders header, desktop left sidebar, center reader area, desktop settings panel, and footer
 
-- src/app/globals.css
- 	- Defines theme tokens and all route-level/component-level styles.
- 	- Controls responsive behavior for:
-  		- header/search dropdown
-  		- surah list cards
-  		- ayah slider and controls
-  		- settings form and preview
+- `src/app/app-header.tsx`
+  - Global header
+  - Desktop search trigger and mobile action buttons
+  - Mobile navigation drawer
+  - Mobile settings drawer
+  - Search modal with Surah and ayah result groups
 
-### Home and Surah Reading
+- `src/app/globals.css`
+  - Theme tokens
+  - Desktop and mobile layout rules
+  - Drawer/modal styling
+  - Reader and settings styling
 
-- src/app/page.js
- 	- Server component.
- 	- Loads normalized Surah list from lib/quran.js.
- 	- Renders Surah cards linking to /surah/:id.
+### Routing
 
-- src/app/surah/[id]/page.js
- 	- Validates Surah id route parameter.
- 	- Reads optional search query parameter ayah.
- 	- Loads Surah metadata + joined ayah content.
- 	- Renders AyahSlider with initialAyahNumber for deep-link navigation.
+- `/`
+  - Redirects to `/surah/1`
 
-- src/app/surah/[id]/ayah-slider.js
- 	- Client component.
- 	- Manual-only ayah navigation (Prev/Next), no auto sliding.
- 	- Initializes and syncs active slide by initialAyahNumber.
- 	- Shows one active ayah panel with decorative Arabic frame.
+- `/surah/[id]`
+  - Main reading route
+  - Pre-generates valid Surah routes using `generateStaticParams`
 
-- src/app/surah/[id]/not-found.js
- 	- Friendly fallback for invalid or missing Surah id.
+- `/settings`
+  - Dedicated settings page
+  - Secondary route; desktop users typically use the always-open settings panel
 
-### Global Search
+### Data and State
 
-- src/app/app-header.js
- 	- Client component rendered globally.
- 	- Loads Surah list once from GET /api/quran for local name matching.
- 	- Performs debounced translation search via POST /api/search.
- 	- Supports:
-  		- Surah name matching (including light fuzzy transliteration support)
-  		- Translation ayah matching
- 	- Deep-links ayah results to:
-  		- /surah/:id?ayah=:ayahNumber
- 	- Clears search state on result click.
- 	- Handles outside-click close and Escape-key close for dropdown.
+- `src/lib/quran.ts`
+  - Reads `surah.json`, `ayat.json`, and `translation.json`
+  - Normalizes records
+  - Caches parsed arrays in memory
+  - Joins Arabic ayah text with translation text
 
-### Settings and Persistence
+- `src/lib/settings.ts`
+  - Defines settings defaults and bounds
+  - Validates and sanitizes saved values
+  - Reads/writes `localStorage`
 
-- src/app/settings/page.js
- 	- Client settings UI.
- 	- Binds controls to global provider:
-  		- Arabic font family
-  		- Arabic font size
-  		- Translation font size
- 	- Includes reset and live preview.
+- `src/app/settings-provider.tsx`
+  - App-wide reader settings store
+  - Uses `useSyncExternalStore`
+  - Applies typography settings through CSS variables
 
-- src/app/settings-provider.js
- 	- Client provider using useSyncExternalStore.
- 	- Ensures hydration-safe default snapshot behavior.
- 	- Hydrates from localStorage once on client.
- 	- Applies CSS variables globally.
+### API Routes
 
-- src/lib/settings.js
- 	- Settings defaults, validation, clamping, merge semantics.
- 	- Safe localStorage read/write wrappers.
- 	- Exposes settingsConstraints for UI controls.
+- `GET /api/quran`
+  - Returns normalized Surah list
 
-### Data Layer
+- `GET /api/quran/[id]`
+  - Returns Surah metadata plus joined ayah content
 
-- src/lib/quran.js
- 	- Reads JSON datasets from public/quran-json.
- 	- Normalizes Surah, ayah, translation records.
- 	- Provides joined Surah content for reader pages.
- 	- Provides translation text search helper.
- 	- Uses in-memory cache in production; bypasses cache in development.
+- `POST /api/search`
+  - Searches translation text and enriches results with Surah names
 
-### API Layer
+## Repository Structure
 
-- src/app/api/quran/route.js
- 	- GET surah list with stable payload:
-  		- { total, surahs }
+```text
+quran-web-application/
+  public/
+    quran-json/
+      ayat.json
+      surah.json
+      translation.json
+      README.md
 
-- src/app/api/quran/[id]/route.js
- 	- GET one Surah content payload:
-  		- validates id
-  		- returns 400 for invalid id
-  		- returns 404 for unknown id
-  		- returns Surah metadata + joined ayat
+  scripts/
+    phase5-qa-check.ts
+    sync-quran-data.ts
 
-- src/app/api/search/route.js
- 	- POST translation search payload:
-  		- request: { query }
-  		- returns 400 for invalid JSON or empty query
-  		- returns matched ayah entries enriched with Surah names
+  src/
+    app/
+      api/
+        quran/
+          [id]/
+            route.ts
+          route.ts
+        search/
+          route.ts
+      settings/
+        page.tsx
+        settings-content.tsx
+        settings-modal.tsx
+      surah/
+        [id]/
+          ayah-list.tsx
+          ayah-slider.tsx
+          not-found.tsx
+          page.tsx
+      app-header.tsx
+      desktop-settings.tsx
+      globals.css
+      layout.tsx
+      page.tsx
+      settings-provider.tsx
+      surah-sidebar.tsx
 
-### Data Operations and QA Scripts
+    lib/
+      quran.ts
+      settings.ts
 
-- scripts/sync-quran-data.mjs
- 	- Pulls full Arabic and English datasets from AlQuran Cloud.
- 	- Validates structural alignment.
- 	- Writes normalized files:
-  		- surah.json
-  		- ayat.json
-  		- translation.json
-
-- scripts/phase5-qa-check.mjs
- 	- Dataset integrity checker.
- 	- Confirms counts and cross-file consistency.
-
-## 6. End-to-End Request Flows
-
-### A. Open Home Page
-
-1. GET / renders src/app/page.js.
-2. page.js calls getSurahList().
-3. quran.js loads/normalizes surah.json.
-4. UI renders card grid with links to /surah/:id.
-
-### B. Open Surah Page
-
-1. GET /surah/:id enters src/app/surah/[id]/page.js.
-2. Route id is validated.
-3. getSurahContent(id) joins ayah + translation.
-4. AyahSlider renders and allows manual panel navigation.
-
-### C. Search and Open Exact Ayah
-
-1. User types in global header input.
-2. Header computes local Surah-name matches.
-3. Header also calls POST /api/search for translation text matches.
-4. User clicks ayah result link:
-  - /surah/:id?ayah=:ayahNumber
-5. Surah page passes initialAyahNumber to AyahSlider.
-6. Slider opens directly on the target ayah panel.
-
-## 7. API Contracts
-
-### GET /api/quran
-
-Success 200
-
-```json
-{
- "total": 114,
- "surahs": [
-  {
-   "id": 1,
-   "nameArabic": "الفاتحة",
-   "nameEnglish": "Al-Faatiha",
-   "revelationType": "Meccan",
-   "totalAyah": 7
-  }
- ]
-}
+  QA_SIGNOFF.md
+  QWA_BackendGuide.md
+  QWA_FrontendGuide.md
+  QWA_Overview.md
+  QuranWebApplication_Version_2.md
+  RESPONSIVE_DESIGN_SPEC.md
+  RESPONSIVE_UI_CHANGES.md
+  WorkFlow.md
 ```
 
-Error 500
+## Runtime Behavior
 
-```json
-{ "error": "Failed to load Surah list." }
-```
+### Launch Flow
 
-### GET /api/quran/:id
+1. User opens `/`
+2. App redirects to `/surah/1`
+3. Al-Fatiha loads as the default reader view
+4. Desktop users see:
+   - Surah sidebar on the left
+   - Reader content in the center
+   - Settings panel on the right
+5. Mobile users use drawers for navigation and settings
 
-Success 200
+### Reader Flow
 
-```json
-{
- "surah": {
-  "id": 2,
-  "nameArabic": "البقرة",
-  "nameEnglish": "Al-Baqarah"
- },
- "totalAyat": 286,
- "ayat": [
-  {
-   "surahId": 2,
-   "ayahNumber": 1,
-   "arabicText": "الم",
-   "translationText": "Alif, Lam, Meem."
-  }
- ]
-}
-```
+1. User selects a Surah from sidebar or search
+2. `src/app/surah/[id]/page.tsx` validates the route id
+3. Surah metadata and joined ayah content load through `src/lib/quran.ts`
+4. `AyahList` renders the full Surah in a continuous reading view
 
-Invalid id 400
+### Search Flow
 
-```json
-{ "error": "Invalid surah id." }
-```
+1. Header opens the search modal
+2. Surah matches are computed client-side from `/api/quran`
+3. Translation matches come from `POST /api/search`
+4. Clicking a result navigates to the Surah route
 
-Unknown id 404
+Important current behavior:
 
-```json
-{ "error": "Surah not found." }
-```
+- Search ayah links still include `?ayah=<number>` in the URL.
+- The current reader UI renders the full Surah list view and does not yet auto-scroll or highlight the target ayah.
 
-### POST /api/search
+## Main UI Components
 
-Request
+- `src/app/surah-sidebar.tsx`
+  - Searchable Surah list
+  - Active Surah indicator
+  - Used in both desktop sidebar and mobile drawer
 
-```json
-{ "query": "mercy" }
-```
+- `src/app/desktop-settings.tsx`
+  - Always-open desktop settings panel
 
-Success 200
+- `src/app/settings/settings-content.tsx`
+  - Settings controls and live preview
 
-```json
-{
- "query": "mercy",
- "total": 12,
- "results": [
-  {
-   "surahId": 1,
-   "ayahNumber": 3,
-   "text": "The Entirely Merciful, the Especially Merciful.",
-   "surahNameEnglish": "Al-Faatiha",
-   "surahNameArabic": "الفاتحة"
-  }
- ]
-}
-```
+- `src/app/surah/[id]/ayah-list.tsx`
+  - Primary active reading component
+  - Renders all ayahs continuously
 
-Invalid JSON 400
+- `src/app/surah/[id]/ayah-slider.tsx`
+  - Legacy reader component retained in codebase
+  - Not currently used by the main Surah route
 
-```json
-{ "error": "Invalid JSON payload." }
-```
+## Scripts
 
-Empty query 400
+- `npm run dev`
+  - Start development server
 
-```json
-{ "error": "Query is required." }
-```
+- `npm run dev:safe`
+  - Start development server with Turbopack disabled and increased memory
 
-## 8. Dataset Contract
+- `npm run build`
+  - Create production build
+
+- `npm run start`
+  - Start production server
+
+- `npm run lint`
+  - Run ESLint
+
+- `npm run sync:quran`
+  - Pull fresh Quran dataset from AlQuran Cloud and rewrite local JSON files
+
+- `npm run qa:check`
+  - Validate dataset counts and cross-file alignment
+
+## Dataset Contract
 
 Files:
 
-- public/quran-json/surah.json
-- public/quran-json/ayat.json
-- public/quran-json/translation.json
+- `public/quran-json/surah.json`
+- `public/quran-json/ayat.json`
+- `public/quran-json/translation.json`
 
 Expected counts:
 
@@ -377,14 +264,14 @@ Expected counts:
 
 Join key:
 
-- (surahId, ayahNumber)
+- `(surahId, ayahNumber)`
 
-## 9. Setup and Local Development
+## Setup
 
 ### Prerequisites
 
-- Node.js 20+ recommended
-- npm 10+ recommended
+- Node.js 20+
+- npm 10+
 
 ### Install
 
@@ -392,7 +279,7 @@ Join key:
 npm install
 ```
 
-### Run Dev Server
+### Run Development
 
 ```bash
 npm run dev
@@ -404,30 +291,15 @@ npm run dev
 npm run build
 ```
 
-### Start Production Mode
+### Start Production
 
 ```bash
 npm run start
 ```
 
-## 10. NPM Scripts
+## Quality Gate
 
-- npm run dev
- 	- start development server
-- npm run build
- 	- create production build
-- npm run start
- 	- run production server
-- npm run lint
- 	- lint all source files
-- npm run sync:quran
- 	- sync and normalize latest dataset from API source
-- npm run qa:check
- 	- run dataset integrity validations
-
-## 11. Quality Gates and Release Checklist
-
-Minimum release gate:
+Recommended release checks:
 
 ```bash
 npm run lint
@@ -435,63 +307,18 @@ npm run qa:check
 npm run build
 ```
 
-Additional checklist:
+Current status at the time of this documentation update:
 
-- verify header search returns Surah and ayah matches
-- verify ayah deep-linking opens the requested ayah panel
-- verify settings persist after full refresh
-- verify API 400/404/500 behavior remains stable
+- `npm run qa:check` passes
+- `npm run build` passes
+- `npm run lint` passes with `next/image` warnings in `src/app/app-header.tsx`
 
-Reference:
+## Related Documents
 
-- QA_SIGNOFF.md
-
-## 12. Troubleshooting
-
-### npm run dev exits with port conflict
-
-If a previous Next.js process is still running, free the port and retry.
-
-### Search result click does not navigate
-
-Expected behavior:
-
-- Surah result opens /surah/:id
-- Ayah result opens /surah/:id?ayah=:ayahNumber
-
-If navigation is not visible, confirm the URL updates. On same-route ayah jumps, UI may update without a large page transition.
-
-### Dataset mismatch errors
-
-Run:
-
-```bash
-npm run sync:quran
-npm run qa:check
-```
-
-## 13. Security and Privacy Notes
-
-- No user account data stored.
-- Reader settings are stored locally in browser localStorage only.
-- No database configured.
-
-## 14. Roadmap Candidates (Post-MVP)
-
-- Keyboard navigation for ayah slider
-- Highlighted ayah focus indicator on deep-link open
-- Optional translation pack strategy
-- Offline-friendly caching strategy
-
-## 15. License and Credits
-
-Data source used by sync script:
-
-- AlQuran Cloud API
-
-Project and implementation workflow references:
-
-- QWA_Overview.md
-- QWA_FrontendGuide.md
-- QWA_BackendGuide.md
-- WorkFlow.md
+- `QWA_Overview.md`
+- `QWA_FrontendGuide.md`
+- `QWA_BackendGuide.md`
+- `RESPONSIVE_DESIGN_SPEC.md`
+- `RESPONSIVE_UI_CHANGES.md`
+- `QA_SIGNOFF.md`
+- `WorkFlow.md`
