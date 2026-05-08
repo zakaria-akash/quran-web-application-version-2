@@ -1,10 +1,10 @@
-/* Theme tokens defined in Phase 1 to keep color and typography centralized. */
 :root {
   --color-black: #0a0a0a;
   --color-navy: #0d1b2a;
   --color-text-light: #e0e1dd;
   --color-primary: #22c55e;
   --color-primary-hover: #16a34a;
+  --color-accent-blue: #9fb7ff;
   --font-ui: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   --qwa-arabic-font-family: "Amiri", serif;
   --qwa-arabic-font-size: 36px;
@@ -12,14 +12,7 @@
   --header-control-radius: 10px;
   --sidebar-width: 280px;
   --settings-width: 300px;
-}
-
-/* Responsive breakpoints for mobile-first design */
-@media (max-width: 768px) {
-  :root {
-    --sidebar-width: 100vw;
-    --settings-width: 100vw;
-  }
+  --header-height: 64px;
 }
 
 /* Global reset for predictable box sizing behavior across components. */
@@ -32,19 +25,17 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  overflow-x: hidden;
 }
 
-/* Global body styling uses Phase 1 black and navy theme tokens. */
+/* Global body styling uses dark gradient theme. */
 body {
   background: linear-gradient(160deg, var(--color-black) 0%, var(--color-navy) 100%);
   color: var(--color-text-light);
   font-family: var(--font-ui);
+  line-height: 1.5;
 }
 
-/* This wrapper ensures settings variables scope all application pages uniformly. */
-.reader-settings-scope {
-  min-height: 100vh;
-}
 /* App shell reserves layout regions for a shared header, content, and footer. */
 .app-shell {
   min-height: 100vh;
@@ -52,7 +43,7 @@ body {
   flex-direction: column;
 }
 
-/* Main content grows to keep footer pinned to the bottom on short pages. */
+/* Main content grows to keep footer pinned to the bottom. */
 .app-main-content {
   flex: 1;
   display: flex;
@@ -61,10 +52,6 @@ body {
 
 /* Desktop 3-column layout: sidebar | main | settings */
 @media (min-width: 1281px) {
-  .app-main-content {
-    flex-direction: row;
-  }
-
   .app-main-content-sidebar {
     display: flex;
     width: var(--sidebar-width);
@@ -75,6 +62,8 @@ body {
   .app-main-content-center {
     flex: 1;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
   }
 
   .app-main-content-settings {
@@ -91,7 +80,8 @@ body {
     flex-direction: column;
   }
 
-  .app-main-content-sidebar {
+  .app-main-content-sidebar,
+  .app-main-content-settings {
     display: none;
   }
 
@@ -99,42 +89,69 @@ body {
     flex: 1;
     overflow-y: auto;
   }
-
-  .app-main-content-settings {
-    display: none;
-  }
 }
 
-/* Global header appears on every route with search and settings access. */
+/* Global header styling */
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 100;
+  height: var(--header-height);
+  padding: 0 16px;
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  backdrop-filter: blur(8px);
-  background: rgba(10, 10, 10, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 16px;
 }
 
-/* Header layout for desktop */
 @media (min-width: 1281px) {
   .app-header {
     display: grid;
-    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
-    gap: 12px;
+    grid-template-columns: var(--sidebar-width) 1fr var(--settings-width);
+    padding: 0;
+    gap: 0;
+  }
+
+  .app-header-brand-container {
+    padding: 0 16px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .app-header-search-container {
+    padding: 0 24px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .app-header-actions-container {
+    padding: 0 16px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
-/* Header layout for mobile */
-@media (max-width: 1280px) {
-  .app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+/* Brand styling */
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.25rem;
+  white-space: nowrap;
+}
+
+.app-header-brand span {
+  font-size: 1.5rem;
 }
 
 /* Hamburger menu for mobile */
@@ -142,419 +159,224 @@ body {
   display: none;
   background: transparent;
   border: none;
-  color: var(--color-text-light);
-  cursor: pointer;
+  color: #fff;
   font-size: 1.5rem;
+  cursor: pointer;
   padding: 8px;
-  border-radius: var(--header-control-radius);
+  margin-left: -8px;
 }
 
 @media (max-width: 1280px) {
   .app-header-hamburger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .app-header-hamburger:hover,
-  .app-header-hamburger:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
-    outline: 2px solid #9fb7ff;
-    outline-offset: 2px;
+    display: block;
   }
 }
 
-/* Global header appears on every route with search and settings access. */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+/* Header controls */
+.app-header-controls {
+  display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  backdrop-filter: blur(8px);
-  background: rgba(10, 10, 10, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  flex: 1;
+  justify-content: flex-end;
 }
 
-/* Brand link provides a consistent way to return to home. */
-.app-header-brand {
-  color: #f0f2f7;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: clamp(1.1rem, 1.25vw + 0.9rem, 1.7rem);
-  line-height: 1.15;
-  white-space: nowrap;
+@media (min-width: 1281px) {
+  .app-header-controls {
+    justify-content: center;
+  }
+}
+
+/* Search bar styling */
+.app-header-search-shell {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+}
+
+.app-header-search-input {
+  width: 100%;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 0 16px 0 40px;
+  color: #fff;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23aab8d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 14px center;
+}
+
+.app-header-search-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+/* Settings button styling */
+.app-header-settings-button {
+  background: var(--color-primary);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-@media (max-width: 1280px) {
-  .app-header-brand {
-    font-size: 1.1rem;
-  }
-
-  .app-header-brand-icon {
-    width: 20px;
-    height: 20px;
-  }
+.app-header-settings-button:hover {
+  background: var(--color-primary-hover);
 }
 
-/* Control group is right-aligned as a single unit in desktop and large layouts. */
-.app-header-controls {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  width: 100%;
-}
-
-@media (max-width: 1280px) {
-  .app-header-controls {
-    width: auto;
-    gap: 8px;
-  }
-}
-
-/* Search shell is a positioning anchor for the dropdown panel. */
-.app-header-search-shell {
-  position: relative;
-  width: min(100%, 460px);
-}
-
-@media (max-width: 1280px) {
-  .app-header-search-shell {
-    width: min(100%, 300px);
-  }
-}
-
-/* Header search input keeps styling minimal while preserving contrast. */
-.app-header-search-input {
-  width: 100%;
-  border-radius: var(--header-control-radius);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-text-light);
-  padding: 10px 12px;
-}
-
-/* Focus ring improves keyboard discoverability for the active search control. */
-.app-header-search-input:focus-visible {
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-/* Search panel shows loading, empty, error, and match states under input. */
-.app-header-search-panel {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  max-height: 320px;
-  overflow-y: auto;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(13, 27, 42, 0.96);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
-}
-
-/* Shared panel status copy style keeps messaging compact and readable. */
-.app-header-search-status,
-.app-header-search-error {
-  margin: 0;
-  padding: 10px 12px;
-}
-
-/* Search groups separate Surah matches from ayah matches inside the dropdown. */
-.app-header-search-group {
-  padding: 6px 0;
-}
-
-/* Group title keeps the dropdown readable without introducing extra visual noise. */
-.app-header-search-group-title {
-  margin: 0;
-  padding: 8px 12px 6px;
-  color: #9fb7ff;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-/* Error message uses warm contrast to stand out from normal status copy. */
-.app-header-search-error {
-  color: #ffb8b8;
-}
-
-/* Each result uses a full-row link for easy keyboard and pointer interaction. */
-.app-header-search-result {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  color: var(--color-text-light);
-  text-decoration: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Hover/focus feedback makes result rows feel clearly interactive. */
-.app-header-search-result:hover,
-.app-header-search-result:focus-visible {
-  background: rgba(255, 255, 255, 0.08);
-  outline: none;
-}
-
-/* Meta text provides Surah/Ayah context before opening result links. */
-.app-header-search-result-meta {
-  color: #c5d3f7;
-  font-size: 0.82rem;
-}
-
-/* Snippet is ellipsized to keep the global panel compact. */
-.app-header-search-result-text {
-  color: #e1e4eb;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Header settings action stays globally accessible as requested. */
-.app-header-settings-button,
 .app-header-settings-icon {
-  border-radius: var(--header-control-radius);
-  border: 1px solid rgba(159, 183, 255, 0.35);
-  background: rgba(159, 183, 255, 0.18);
-  color: #dbe6ff;
-  text-decoration: none;
-  font-weight: 600;
-  padding: 8px 12px;
-  white-space: nowrap;
-  cursor: pointer;
-  font: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
 }
 
-/* Button feedback keeps focus and hover behavior clear and accessible. */
-.app-header-settings-button:hover,
-.app-header-settings-button:focus-visible,
-.app-header-settings-icon:hover,
-.app-header-settings-icon:focus-visible {
-  background: rgba(159, 183, 255, 0.3);
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
+.app-header-settings-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 @media (max-width: 1280px) {
   .app-header-settings-button {
-    padding: 8px;
-    border: none;
-    background: transparent;
-    font-size: 1.25rem;
-  }
-
-  .app-header-settings-button:hover,
-  .app-header-settings-button:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
+    display: none;
   }
 }
 
-/* Mobile drawer backdrop */
+/* Removed the display: none for app-header-settings-icon on PC */
+
+/* Drawer styles */
 .drawer-backdrop {
-  display: none;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 30;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
 }
 
-@media (max-width: 1280px) {
-  .drawer-backdrop.open {
-    display: block;
-  }
+.drawer-backdrop.open {
+  opacity: 1;
+  visibility: visible;
 }
 
-/* Mobile drawer styles */
 .drawer {
-  display: none;
   position: fixed;
   top: 0;
   left: 0;
-  width: var(--sidebar-width);
-  height: 100vh;
-  background: rgba(10, 10, 10, 0.95);
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  overflow-y: auto;
-  z-index: 40;
+  bottom: 0;
+  width: 300px;
+  max-width: 85vw;
+  background: var(--color-black);
+  z-index: 1001;
   transform: translateX(-100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 10px 0 25px rgba(0, 0, 0, 0.5);
 }
 
-@media (max-width: 1280px) {
-  .drawer {
-    display: block;
-  }
-
-  .drawer.open {
-    transform: translateX(0);
-  }
+.drawer.open {
+  transform: translateX(0);
 }
 
-@media (min-width: 1281px) {
-  .drawer {
-    display: none !important;
-  }
-}
-
-/* Drawer header */
 .drawer-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  position: sticky;
-  top: 0;
-  background: rgba(10, 10, 10, 0.95);
-  z-index: 41;
 }
 
-.drawer-close-button {
-  background: transparent;
-  border: none;
-  color: var(--color-text-light);
-  cursor: pointer;
-  font-size: 1.5rem;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.drawer-close-button:hover,
-.drawer-close-button:focus-visible {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: var(--header-control-radius);
-}
-
-/* Drawer content */
 .drawer-content {
-  padding: 16px;
-}
-
-/* Settings modal responsive styles */
-.settings-modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 50;
-  display: flex;
-  align-items: flex-end;
-}
-
-@media (min-width: 1281px) {
-  .settings-modal-backdrop {
-    align-items: stretch;
-    justify-content: flex-end;
-  }
-}
-
-.settings-modal {
-  background: rgba(10, 10, 10, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  max-height: 90vh;
+  flex: 1;
   overflow-y: auto;
-  width: 100%;
-  max-width: 500px;
 }
 
-@media (max-width: 1280px) {
-  .settings-modal {
-    border-radius: 16px 16px 0 0;
-    max-height: 90vh;
-  }
-}
-
-@media (min-width: 1281px) {
-  .settings-modal {
-    border-radius: 0;
-    max-height: 100vh;
-    width: var(--settings-width);
-  }
-}
-
-/* Sidebar for surah list (desktop only) */
+/* Surah sidebar styles */
 .surah-sidebar {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-@media (max-width: 1280px) {
-  .surah-sidebar {
-    display: none;
-  }
-}
-
 .surah-sidebar-header {
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(10, 10, 10, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.surah-sidebar-search {
+  width: 100%;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0 12px;
+  color: #fff;
+  font-size: 0.9rem;
 }
 
 .surah-sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 0;
 }
 
-/* Surah sidebar list items */
 .surah-sidebar-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  color: var(--color-text-light);
   text-decoration: none;
+  color: #aab8d4;
   border-left: 3px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
 .surah-sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
 .surah-sidebar-item.active {
-  background: rgba(34, 197, 94, 0.1);
-  border-left-color: var(--color-primary);
+  background: rgba(34, 197, 94, 0.08);
   color: var(--color-primary);
-  font-weight: 600;
+  border-left-color: var(--color-primary);
 }
 
 .surah-sidebar-item-number {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(159, 183, 255, 0.16);
-  font-weight: 600;
   font-size: 0.85rem;
-  flex-shrink: 0;
+  font-weight: 600;
+  color: #fff;
 }
 
 .surah-sidebar-item.active .surah-sidebar-item-number {
@@ -563,24 +385,261 @@ body {
 }
 
 .surah-sidebar-item-names {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
   min-width: 0;
 }
 
 .surah-sidebar-item-english {
   font-size: 0.9rem;
-  color: var(--color-text-light);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .surah-sidebar-item-arabic {
-  font-size: 0.85rem;
   font-family: var(--qwa-arabic-font-family);
+  font-size: 1rem;
+  direction: rtl;
+  margin-top: 2px;
+}
+
+/* Settings panel desktop styles */
+.settings-panel-desktop {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.settings-panel-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-panel-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* Settings modal styles */
+.settings-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end; /* Bottom sheet on mobile */
+  justify-content: center;
+}
+
+@media (min-width: 1281px) {
+  .settings-modal-backdrop {
+    align-items: center;
+  }
+}
+
+.settings-modal {
+  background: #111;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+@media (min-width: 1281px) {
+  .settings-modal {
+    border-radius: 16px;
+    max-height: 80vh;
+  }
+}
+
+.settings-modal-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.settings-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
   color: #aab8d4;
+}
+
+.settings-modal-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.settings-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-modal-close {
+  width: 100%;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-modal-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Settings controls styling */
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.settings-select {
+  height: 44px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.settings-range {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  outline: none;
+}
+
+.settings-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.settings-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Support button styling */
+.support-button {
+  margin-top: 12px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.support-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+.support-button-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.support-button-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+/* Ayah card and content styling */
+.ayah-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.ayah-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ayah-number-badge {
+  background: var(--color-primary);
+  color: #000;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.ayah-arabic-text {
+  font-family: var(--qwa-arabic-font-family);
+  font-size: var(--qwa-arabic-font-size);
   direction: rtl;
   text-align: right;
+  line-height: 2;
+  margin-bottom: 24px;
+  color: #fff;
 }
+
+.ayah-translation-text {
+  font-size: var(--qwa-translation-font-size);
+  color: #aab8d4;
+  line-height: 1.6;
+}
+
+/* Utilities */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -592,1140 +651,10 @@ body {
   border: 0;
 }
 
-/* Jump menu dropdown */
-.ayah-jump-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  max-height: 200px;
-  overflow-y: auto;
-  background: rgba(13, 27, 42, 0.96);
-  border: 1px solid rgba(159, 183, 255, 0.35);
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 10;
-}
-
-.ayah-jump-menu-item {
-  padding: 10px 12px;
-  color: var(--color-text-light);
-  cursor: pointer;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  transition: background 0.15s ease;
-}
-
-.ayah-jump-menu-item:first-child {
-  border-top: none;
-}
-
-.ayah-jump-menu-item:hover {
-  background: rgba(159, 183, 255, 0.18);
-}
-
-/* Settings modal header */
-.settings-modal-header {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.settings-title {
-  margin: 0 0 6px;
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-
-.settings-subtitle {
-  margin: 0;
-  color: #aab8d4;
-  font-size: 0.9rem;
-}
-
-/* Settings modal content */
-.settings-modal-content {
-  padding: 16px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* Settings modal footer */
-.settings-modal-footer {
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  display: flex;
-  gap: 8px;
-}
-
-.settings-modal-close {
-  flex: 1;
-  padding: 10px 16px;
-  background: var(--color-primary);
-  color: #000;
-  border: none;
-  border-radius: var(--header-control-radius);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.settings-modal-close:hover,
-.settings-modal-close:focus-visible {
-  background: var(--color-primary-hover);
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-@media (max-width: 1280px) {
-  .settings-modal-footer {
-    padding: 12px 16px;
-  }
-
-  .settings-modal-close {
-    padding: 12px;
-  }
-}
-
-/* Settings panel for desktop */
-.settings-panel-desktop {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 16px 0;
-}
-
-.settings-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.settings-panel-toggle {
-  background: transparent;
-  border: none;
-  color: var(--color-text-light);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.settings-panel-toggle:hover {
-  color: var(--color-primary);
-}
-
-.settings-panel-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
 .app-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  color: #b8bfd0;
-  text-align: center;
-  font-size: 0.9rem;
-  padding: 12px 16px;
-}
-/* Home page container keeps top alignment and centered text with safe padding. */
-.home-page {
-  min-height: 100vh;
-  padding: 32px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  text-align: center;
-  font-size: clamp(1.5rem, 2vw + 1rem, 2.5rem);
-  font-weight: 600;
-}
-
-/* This page wrapper provides breathing room around the Surah index content. */
-.surah-list-page {
-  min-height: 100%;
   padding: 24px;
-  max-width: 100%;
-  margin: 0 auto;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width: 1280px) {
-  .surah-list-page {
-    padding: 16px;
-  }
-}
-
-/* The title is intentionally prominent to anchor the reading interface. */
-.surah-list-title {
-  margin: 0;
-  font-size: clamp(1.8rem, 2.2vw + 1rem, 3rem);
-}
-
-/* Supporting copy clarifies the list action and keeps vertical rhythm. */
-.surah-list-subtitle {
-  margin: 10px 0 24px;
-  color: #c6c9d1;
-}
-/* Responsive card grid adapts from mobile to desktop without media query complexity. */
-.surah-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  text-align: left;
-  max-height: calc(100dvh - 240px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-block: 10px;
-    padding-right: 6px;
-  }
-  
-  /* Thin scrollbar keeps dense Surah lists usable without visual heaviness. */
-  .surah-grid {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(159, 183, 255, 0.55) rgba(255, 255, 255, 0.08);
-  }
-  
-  .surah-grid::-webkit-scrollbar {
-    width: 10px;
-  }
-  
-  .surah-grid::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 999px;
-  }
-  
-  .surah-grid::-webkit-scrollbar-thumb {
-    background: rgba(159, 183, 255, 0.55);
-    border-radius: 999px;
-  }
-  
-  .surah-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(159, 183, 255, 0.75);
-}
-
-/* Each card is a full-area link with contrast, hover, and focus affordances. */
-.surah-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  padding: 16px;
-  color: var(--color-text-light);
-  text-decoration: none;
-  transition: transform 0.18s ease, background-color 0.18s ease;
-}
-
-/* Keyboard users get a clear ring and pointer users get a subtle lift. */
-.surah-card:hover,
-.surah-card:focus-visible {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.11);
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-/* Surah number is styled as a compact badge for quick visual scanning. */
-.surah-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: rgba(159, 183, 255, 0.16);
-  font-weight: 700;
-}
-
-/* Arabic name gets larger type size and right-aligned reading direction support. */
-.surah-name-arabic {
-  font-size: calc(var(--qwa-arabic-font-size) * 0.6);
-    font-family: var(--qwa-arabic-font-family);
-  direction: rtl;
-  text-align: right;
-}
-
-/* English label is secondary metadata with softened color. */
-.surah-name-english {
-  color: #d2d6de;
-}
-
-/* Detail page container centers content and ensures readability on all screens. */
-.surah-detail-page {
-  min-height: 100%;
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width: 768px) {
-  .surah-detail-page {
-    padding: 16px;
-  }
-}
-
-/* Surah detail header */
-.surah-detail-header {
-  text-align: center;
-  margin-bottom: 24px;
-  padding: 16px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.surah-detail-title {
-  margin: 0 0 8px;
-  font-size: clamp(1.5rem, 2vw + 1rem, 2.5rem);
-  font-weight: 600;
-}
-
-.surah-detail-arabic-name {
-  margin: 0 0 8px;
-  font-size: 1.3rem;
-  font-family: var(--qwa-arabic-font-family);
-  color: #9fb7ff;
-  direction: rtl;
-}
-
-.surah-detail-meta {
-  margin: 0;
-  color: #8a94b3;
-  font-size: 0.9rem;
-}
-
-/* Top bar keeps the back link in a stable place across Surah pages. */
-.surah-detail-topbar {
-  display: flex;
-    gap: 14px;
-  margin-bottom: 16px;
-}
-
-/* Shared back link style for detail and not-found views. */
-.back-link {
-  color: #b8c8ff;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-/* Focus and hover states keep navigation affordances obvious. */
-.back-link:hover,
-.back-link:focus-visible {
-  text-decoration: underline;
-  outline: none;
-}
-
-/* Secondary back links are visually differentiated while keeping shared behavior. */
-.secondary-back-link {
-  color: #d0dcff;
-}
-/* Slider container keeps ayah content focused within a polished presentation area. */
-.ayah-slider {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* The slider panel keeps a consistent height across Surahs for a stable layout. */
-.ayah-slider-viewport {
-  height: fit-content;
-  overflow-y: visible;
-  overflow-x: hidden;
-  border-radius: 16px;
-}
-
-@media (max-width: 768px) {
-  .ayah-slider-viewport {
-    border-radius: 12px;
-  }
-}
-
-/* Track uses translate animation for smooth prev/next transitions. */
-.ayah-slider-track {
-  display: flex;
-  align-items: flex-start;
-  width: 100%;
-  min-height: 1px;
-  transition: transform 280ms ease;
-  will-change: transform;
-}
-
-/* Each slide occupies full viewport width to emulate a panel carousel. */
-.ayah-slide {
-  flex: 0 0 100%;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: fit-content;
-  box-sizing: border-box;
-  background: linear-gradient(160deg, rgba(8, 18, 30, 0.92) 0%, rgba(11, 30, 48, 0.92) 100%);
-  border: 1px solid rgba(182, 204, 255, 0.24);
-  border-radius: 16px;
-  padding: 18px;
-  overflow-y: visible;
-}
-
-@media (max-width: 768px) {
-  .ayah-slide {
-    border-radius: 12px;
-    padding: 14px;
-  }
-}
-
-.ayah-slide > * {
-  max-width: 100%;
-}
-
-/* Arabic frame adds subtle ornamentation while preserving readability. */
-.ayah-arabic-frame {
-  position: relative;
-  margin-top: 8px;
-  border-radius: 14px;
-  border: 1px solid rgba(205, 185, 129, 0.42);
-  background: linear-gradient(140deg, rgba(17, 32, 50, 0.9) 0%, rgba(11, 22, 35, 0.9) 100%);
-  padding: 16px;
-}
-
-/* Corner accents mimic a refined Arabic manuscript-style frame. */
-.ayah-arabic-frame::before,
-.ayah-arabic-frame::after {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(224, 205, 148, 0.68);
-}
-
-.ayah-arabic-frame::before {
-  top: 8px;
-  right: 8px;
-  border-left: 0;
-  border-bottom: 0;
-}
-
-.ayah-arabic-frame::after {
-  bottom: 8px;
-  left: 8px;
-  border-right: 0;
-  border-top: 0;
-}
-
-/* Slider controls balance navigation and progress with consistent theme colors. */
-.ayah-slider-controls {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-@media (max-width: 768px) {
-  .ayah-slider-controls {
-    gap: 8px;
-    margin-top: 12px;
-  }
-}
-
-/* Navigation buttons */
-.ayah-slider-nav-button {
-  background: rgba(159, 183, 255, 0.18);
-  border: 1px solid rgba(159, 183, 255, 0.35);
-  color: #dbe6ff;
-  border-radius: var(--header-control-radius);
-  padding: 8px 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.ayah-slider-nav-button:hover:not(:disabled),
-.ayah-slider-nav-button:focus-visible {
-  background: rgba(159, 183, 255, 0.3);
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-.ayah-slider-nav-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Jump control gives direct ayah access in a compact, professional toolbar pattern. */
-.ayah-slider-jump {
-  display: flex;
-  position: relative;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-@media (max-width: 768px) {
-  .ayah-slider-jump {
-    flex-direction: column;
-    gap: 6px;
-  }
-}
-
-.ayah-slider-jump-label {
-  color: #c8d1e9;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-@media (max-width: 768px) {
-  .ayah-slider-jump-label {
-    display: none;
-  }
-}
-
-.ayah-slider-jump-field {
-  position: relative;
-  min-width: 160px;
-}
-
-.ayah-slider-jump-input {
-  width: 100%;
-  min-width: 160px;
-  border: 1px solid rgba(159, 183, 255, 0.35);
-  border-radius: 10px;
-  background-color: rgba(12, 26, 44, 0.96);
-  color: #e7eeff;
-  padding: 8px 34px 8px 10px;
-  font: inherit;
-  text-align: left;
-  cursor: text;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23dbe6ff' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px 8px;
-}
-
-.ayah-slider-jump-input::placeholder {
-  color: #adc0ee;
-}
-
-.ayah-slider-jump-input:focus-visible {
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-.ayah-slider-jump-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 6;
-  max-height: 220px;
-  margin: 0;
-  padding: 4px;
-  list-style: none;
-  border: 1px solid rgba(159, 183, 255, 0.35);
-  border-radius: 10px;
-  background: rgba(12, 26, 44, 0.98);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(159, 183, 255, 0.55) rgba(255, 255, 255, 0.08);
-}
-
-.ayah-slider-jump-menu::-webkit-scrollbar {
-  width: 10px;
-}
-
-.ayah-slider-jump-menu::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-}
-
-.ayah-slider-jump-menu::-webkit-scrollbar-thumb {
-  background: rgba(159, 183, 255, 0.55);
-  border-radius: 999px;
-}
-
-.ayah-slider-jump-menu::-webkit-scrollbar-thumb:hover {
-  background: rgba(159, 183, 255, 0.75);
-}
-
-.ayah-slider-jump-option {
-  width: 100%;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #e7eeff;
-  padding: 8px 10px;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.ayah-slider-jump-option:hover,
-.ayah-slider-jump-option:focus-visible {
-  background: rgba(159, 183, 255, 0.22);
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-.ayah-slider-jump-option.is-selected {
-  background: rgba(159, 183, 255, 0.18);
-  color: #ffffff;
-}
-
-.ayah-slider-jump-empty {
-  padding: 8px 10px;
-  color: #c8d1e9;
-  font-size: 0.92rem;
-}
-/* Prev/next actions are compact and professional in the existing visual language. */
-.ayah-slider-button {
-  border: 1px solid rgba(159, 183, 255, 0.4);
-  background: rgba(159, 183, 255, 0.2);
-  color: #dbe6ff;
-  border-radius: 10px;
-  padding: 9px 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Hover and focus states preserve keyboard and pointer clarity. */
-.ayah-slider-button:hover,
-.ayah-slider-button:focus-visible {
-  background: rgba(159, 183, 255, 0.3);
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-/* Disabled state avoids accidental navigation beyond slide boundaries. */
-.ayah-slider-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Counter keeps users oriented as they manually move between ayat. */
-.ayah-slider-counter {
-  margin: 0;
-  text-align: center;
-  color: #c8d1e9;
-  font-weight: 600;
-}
-
-/* Reduced motion users should get instant transitions for accessibility comfort. */
-@media (prefers-reduced-motion: reduce) {
-  .ayah-slider-track {
-    transition: none;
-  }
-}
-/* Surah header creates a clean visual hierarchy before the ayah list begins. */
-.surah-detail-header {
-  margin-bottom: 20px;
-}
-
-/* English title is the primary heading for the page. */
-.surah-detail-title {
-  margin: 0;
-  font-size: clamp(1.6rem, 1.7vw + 1rem, 2.4rem);
-}
-
-/* Arabic name appears as a co-primary label below the English heading. */
-.surah-detail-arabic-name {
-  margin: 6px 0;
-  font-size: calc(var(--qwa-arabic-font-size) * 0.75);
-    font-family: var(--qwa-arabic-font-family);
-  direction: rtl;
-  text-align: right;
-}
-
-/* Meta line carries low-priority route context information. */
-.surah-detail-meta {
-  margin: 0;
-  color: #c3c8d2;
-}
-
-/* Empty state is framed distinctly to communicate missing content without error tone. */
-.surah-empty-state {
-  padding: 18px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Ayah list stacks cards in a readable vertical flow. */
-.ayah-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* Ayah card isolates each ayah visually for easier reading and scanning. */
-.ayah-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  padding: 16px;
-}
-
-/* Ayah number uses uppercase spacing to function as compact metadata. */
-.ayah-number {
-  margin: 0 0 10px;
-  color: #b7bfd0;
   font-size: 0.85rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* Arabic ayah text gets stronger emphasis and right alignment for readability. */
-.ayah-arabic-text {
-  margin: 0;
-  direction: rtl;
-  text-align: right;
-  font-size: var(--qwa-arabic-font-size);
-    font-family: var(--qwa-arabic-font-family);
-  line-height: 1.8;
-}
-
-/* Translation text remains clearly separated with softer visual weight. */
-.ayah-translation-text {
-  margin: 10px 0 0;
-  color: #d5d8df;
-  font-size: var(--qwa-translation-font-size);
-  line-height: 1.6;
-}
-
-/* Not-found page remains centered and simple to reduce recovery friction. */
-.surah-not-found-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  padding: 24px;
-}
-
-/* Not-found title is concise and immediately visible. */
-.surah-not-found-title {
-  margin: 0;
-  font-size: clamp(1.6rem, 1.6vw + 1rem, 2.4rem);
-}
-
-/* Not-found support text keeps the reason clear and actionable. */
-.surah-not-found-text {
-  margin: 0;
-  color: #ccd2dc;
-  max-width: 560px;
-}
-/* Search page container uses the same max-width pattern as other major screens. */
-.search-page {
-  min-height: 100vh;
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-/* Search top bar keeps navigation stable across reading and search views. */
-.search-topbar {
-  margin-bottom: 14px;
-}
-
-/* Search header groups title and helper text for quick feature orientation. */
-.search-header {
-  margin-bottom: 20px;
-}
-
-/* Search title is a primary heading with responsive size scaling. */
-.search-title {
-  margin: 0;
-  font-size: clamp(1.6rem, 1.8vw + 1rem, 2.5rem);
-}
-
-/* Subtitle softens contrast while preserving readability on dark backgrounds. */
-.search-subtitle {
-  margin: 8px 0 0;
-  color: #c4cbd8;
-}
-
-/* Input section uses a simple vertical layout for label-input clarity. */
-.search-input-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-/* Label styling keeps form semantics visible and consistent with page typography. */
-.search-label {
-  font-weight: 600;
-}
-
-/* Input has clear focus visuals and sufficient contrast in the dark theme. */
-.search-input {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-text-light);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 11px 12px;
-}
-
-/* Focus ring improves keyboard usability and discoverability of active field. */
-.search-input:focus-visible {
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-/* Status line communicates in-flight asynchronous search state. */
-.search-status {
-  margin: 10px 0 0;
-  color: #cfd7e8;
-}
-
-/* Error line uses warm contrast to distinguish failures from normal states. */
-.search-error {
-  margin: 10px 0 0;
-  color: #ffb8b8;
-}
-
-/* Result region spacing prevents cards from feeling visually cramped. */
-.search-results {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Empty state copy is subtle and not styled as an application error. */
-.search-empty {
-  margin: 0;
-  color: #c2cadd;
-}
-
-/* Result cards mirror existing card language for a consistent product feel. */
-.search-result-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  padding: 14px;
-}
-
-/* Metadata line provides context before the user reads translation text. */
-.search-result-meta {
-  margin: 0;
-  color: #b8bfd0;
-  font-size: 0.9rem;
-}
-
-/* Translation text is primary content and receives stronger foreground contrast. */
-.search-result-text {
-  margin: 10px 0;
-  font-size: var(--qwa-translation-font-size);
-  line-height: 1.6;
-}
-
-/* Result link is visually tied to navigation actions and keyboard-friendly. */
-.search-result-link {
-  color: #bbceff;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-/* Hover/focus ensures result actions remain clearly interactive. */
-.search-result-link:hover,
-.search-result-link:focus-visible {
-  text-decoration: underline;
-  outline: none;
-}
-/* Settings page container follows the same centered page rhythm as other main routes. */
-.settings-page {
-  min-height: 100vh;
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-/* Top bar keeps route navigation stable while adjusting preferences. */
-.settings-topbar {
-  display: flex;
-  gap: 14px;
-  margin-bottom: 16px;
-}
-
-/* Header section frames personalization purpose and persistence behavior. */
-.settings-header {
-  margin-bottom: 18px;
-}
-
-/* Settings title remains visually consistent with other route-level headings. */
-.settings-title {
-  margin: 0;
-  font-size: clamp(1.6rem, 1.8vw + 1rem, 2.5rem);
-}
-
-/* Subtitle gives guidance while keeping a secondary visual weight. */
-.settings-subtitle {
-  margin: 8px 0 0;
-  color: #c4cbd8;
-}
-
-/* Control panel groups form fields in a card-style container for clarity. */
-.settings-panel {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* Each field uses a compact vertical layout for label-control readability. */
-.settings-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Labels keep controls understandable and accessible across screen sizes. */
-.settings-label {
-  font-weight: 600;
-}
-
-/* Select control styling matches the dark theme and form control language. */
-.settings-select {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-text-light);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-/* Range controls are full-width so values are easy to tune on touch devices. */
-.settings-range {
-  width: 100%;
-}
-
-/* Focus-visible styles improve keyboard navigation clarity in settings controls. */
-.settings-select:focus-visible,
-.settings-range:focus-visible,
-.settings-reset-button:focus-visible {
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-/* Actions row keeps reset button placement stable and visually separated. */
-.settings-actions {
-  margin-top: 4px;
-}
-
-/* Reset button uses a subtle contrast style appropriate for secondary actions. */
-.settings-reset-button {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-text-light);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Hover feedback keeps pointer interactivity obvious without visual noise. */
-.settings-reset-button:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* Preview card gives immediate visual confirmation of applied settings values. */
-.settings-preview {
-  margin-top: 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  padding: 16px;
-}
-
-/* Preview heading labels the sample area for assistive technologies and users. */
-.settings-preview-title {
-  margin: 0 0 12px;
-  font-size: 1.1rem;
-}
-
-/* Arabic preview uses the same runtime settings variables as Surah pages. */
-.settings-preview-arabic {
-  margin: 0;
-  direction: rtl;
-  text-align: right;
-  font-family: var(--qwa-arabic-font-family);
-  font-size: var(--qwa-arabic-font-size);
-  line-height: 1.8;
-}
-
-/* Translation preview mirrors Surah translation settings for immediate comparison. */
-.settings-preview-translation {
-  margin: 10px 0 0;
-  font-size: var(--qwa-translation-font-size);
-  line-height: 1.6;
-  color: #d7dce5;
-}
-/* Modal backdrop keeps focus on settings while dimming the reader view behind it. */
-.settings-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(1, 6, 12, 0.72);
-  display: grid;
-  place-items: center;
-  overflow: auto;
-  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-}
-
-/* Dialog panel follows existing card language while allowing scroll for smaller screens. */
-.settings-modal {
-  width: min(920px, calc(100vw - 24px));
-  max-height: calc(100vh - 24px);
-  max-height: calc(100dvh - 24px);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg, rgba(12, 23, 37, 0.98) 0%, rgba(7, 16, 28, 0.98) 100%);
-  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.45);
-}
-
-/* Header keeps title/context visible while body can scroll independently. */
-.settings-modal-header {
-  padding: 18px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  display: block;
-}
-
-/* Body scroll ensures full settings remain reachable on compact devices. */
-.settings-modal-content {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-/* Footer anchors the close control at the bottom center of the modal. */
-.settings-modal-footer {
-  padding: 14px 20px 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  width: 100%;
-  display: grid;
-  place-items: center;
-}
-
-/* Close control mirrors other secondary actions and remains keyboard visible. */
-.settings-modal-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-inline: auto;
-  background: rgba(255, 255, 255, 0.08);
-  color: #e4e9f4;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.settings-modal-close:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.settings-modal-close:focus-visible {
-  outline: 2px solid #9fb7ff;
-  outline-offset: 2px;
-}
-
-/* Compact modal layout keeps all controls visible and reachable on smaller devices. */
-@media (max-width: 700px) {
-  .settings-modal {
-    width: calc(100vw - 16px);
-    max-height: calc(100vh - 16px);
-    max-height: calc(100dvh - 16px);
-    border-radius: 12px;
-  }
-
-  .settings-modal-header {
-    padding: 14px;
-  }
-
-  .settings-modal-content {
-    padding: 14px;
-  }
-
-  .settings-modal-footer {
-    padding: 12px 14px 14px;
-  }
-
-  .surah-grid {
-    max-height: none;
-    overflow: visible;
-    padding-right: 0;
-  }
-}
-/* Mobile header stacks controls for easier tap interaction and better spacing. */
-@media (max-width: 880px) {
-  .app-header {
-    grid-template-columns: 1fr;
-  }
-
-    .surah-detail-header,
-    .surah-detail-title,
-    .surah-detail-meta {
-      text-align: center;
-    }
-  
-    .surah-detail-arabic-name {
-      text-align: center;
-    }
-  .app-header-brand {
-    justify-self: center;
-      text-align: center;
-  }
-
-  .app-header-controls {
-    justify-self: stretch;
-    width: 100%;
-  }
-
-  .app-header-search-shell {
-    width: 100%;
-  }
-.ayah-slide {
-  padding: 14px;
-}
-
-.ayah-slider-controls {
-  grid-template-columns: 1fr 1fr;
-}
-
-.ayah-slider-counter {
-  grid-column: span 2;
-  order: 3;
-}
-
-.ayah-slider-jump {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.ayah-slider-jump-field,
-.ayah-slider-jump-input {
-  width: 100%;
-  min-width: 0;
-}
-.ayah-slider-viewport {
-  max-height: none;
-}
+  color: #666;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }

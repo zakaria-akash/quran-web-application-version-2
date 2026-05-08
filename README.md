@@ -8,10 +8,11 @@ A production-ready Quran reader built on Next.js App Router (JavaScript only), w
 
 - complete Surah index (114)
 - Arabic ayah text + English translation
-- global header search (Surah name and translation text)
-- click-through deep-linking to exact ayah panels
-- persistent reader personalization (font family and sizes)
-- dark visual system (Black + Navy)
+- global header search (Surah name and translation text) integrated globally across all routes.
+- click-through deep-linking to exact ayah panels.
+- persistent reader personalization (font family and sizes).
+- fully responsive UI (3-column desktop / single-column mobile).
+- dark visual system (Black + Navy with Green accents).
 
 This document is the technical handbook for developers, maintainers, and reviewers.
 

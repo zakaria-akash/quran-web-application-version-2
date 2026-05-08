@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurahContent } from "@/lib/quran";
+import { useReaderSettings } from "@/app/settings-provider";
 
 interface AyahSliderProps {
   ayat: SurahContent[];
@@ -10,6 +11,8 @@ interface AyahSliderProps {
 
 // This component provides manual-only slide navigation for Surah ayat.
 export default function AyahSlider({ ayat, initialAyahNumber = null }: AyahSliderProps) {
+  const { settings } = useReaderSettings();
+  
   // Current slide index tracks the visible ayah panel.
   const [activeIndex, setActiveIndex] = useState(() => {
     if (!Array.isArray(ayat) || ayat.length === 0 || !initialAyahNumber) {
@@ -162,8 +165,8 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }: AyahSlide
 
   return (
     <section className="ayah-slider" aria-label="Ayah slider">
-      <div className="ayah-slider-jump" ref={jumpMenuRef}>
-        <label htmlFor="ayah-jump-input" className="ayah-slider-jump-label">
+      <div className="ayah-slider-jump" ref={jumpMenuRef} style={{ marginBottom: "20px" }}>
+        <label htmlFor="ayah-jump-input" className="ayah-slider-jump-label" style={{ fontWeight: 600, color: "#fff" }}>
           Jump To Ayah
         </label>
         <div className="ayah-slider-jump-field">
@@ -171,6 +174,15 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }: AyahSlide
             id="ayah-jump-input"
             type="text"
             className="ayah-slider-jump-input"
+            style={{ 
+              width: "100%", 
+              height: "40px", 
+              background: "rgba(255,255,255,0.08)", 
+              border: "1px solid rgba(255,255,255,0.15)", 
+              borderRadius: "20px",
+              padding: "0 16px",
+              color: "#fff"
+            }}
             value={jumpQuery}
             onChange={handleJumpInputChange}
             onFocus={handleJumpInputFocus}
@@ -213,18 +225,19 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }: AyahSlide
       </div>
 
       {/* Pagination controls stay on their own row below Jump To Ayah. */}
-      <div className="ayah-slider-controls">
+      <div className="ayah-slider-controls" style={{ marginBottom: "24px" }}>
         <button
           type="button"
           onClick={goToPrev}
           disabled={activeIndex === 0}
           className="ayah-slider-button"
+          style={{ background: activeIndex === 0 ? "rgba(255,255,255,0.05)" : "var(--color-primary)", color: activeIndex === 0 ? "#666" : "#000", border: "none", borderRadius: "8px", padding: "8px 16px", fontWeight: "600" }}
           aria-label="Go to previous ayah"
         >
           Prev
         </button>
 
-        <p className="ayah-slider-counter" aria-live="polite">
+        <p className="ayah-slider-counter" aria-live="polite" style={{ fontWeight: "700", color: "#fff" }}>
           {activeIndex + 1} / {totalAyat}
         </p>
 
@@ -233,6 +246,7 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }: AyahSlide
           onClick={goToNext}
           disabled={activeIndex === totalAyat - 1}
           className="ayah-slider-button"
+          style={{ background: activeIndex === totalAyat - 1 ? "rgba(255,255,255,0.05)" : "var(--color-primary)", color: activeIndex === totalAyat - 1 ? "#666" : "#000", border: "none", borderRadius: "8px", padding: "8px 16px", fontWeight: "600" }}
           aria-label="Go to next ayah"
         >
           Next
@@ -250,16 +264,33 @@ export default function AyahSlider({ ayat, initialAyahNumber = null }: AyahSlide
             <article
               key={`${ayah.surahId}-${ayah.ayahNumber}`}
               className="ayah-slide"
+              style={{ flex: "0 0 100%", padding: "0 10px" }}
               aria-hidden={index !== activeIndex}
             >
-              <p className="ayah-number">Ayah {ayah.ayahNumber}</p>
+              <div className="ayah-card">
+                <div className="ayah-header">
+                  <span className="ayah-number-badge">{ayah.ayahNumber}</span>
+                </div>
+                
+                <p 
+                  className="ayah-arabic-text" 
+                  style={{ 
+                    fontFamily: settings.arabicFontFamily, 
+                    fontSize: `${settings.arabicFontSize}px` 
+                  }}
+                >
+                  {ayah.arabicText}
+                </p>
 
-              {/* Decorative Arabic frame gives each ayah a focused reading presence. */}
-              <div className="ayah-arabic-frame">
-                <p className="ayah-arabic-text">{ayah.arabicText}</p>
+                <p 
+                  className="ayah-translation-text"
+                  style={{ 
+                    fontSize: `${settings.translationFontSize}px` 
+                  }}
+                >
+                  {ayah.translationText || "Translation unavailable."}
+                </p>
               </div>
-
-              <p className="ayah-translation-text">{ayah.translationText || "Translation unavailable."}</p>
             </article>
           ))}
         </div>

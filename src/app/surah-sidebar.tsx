@@ -1,16 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Surah } from "@/lib/quran";
 
-export default function SurahSidebar() {
+interface SurahSidebarProps {
+  onItemClick?: () => void;
+}
+
+export default function SurahSidebar({ onItemClick }: SurahSidebarProps) {
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
 
-  // Extract current surah ID from pathname
   const currentSurahId = pathname.startsWith("/surah/") ? parseInt(pathname.split("/")[2]) : null;
 
   useEffect(() => {
@@ -31,26 +35,44 @@ export default function SurahSidebar() {
     loadSurahs();
   }, []);
 
+  const filteredSurahs = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return surahs;
+    return surahs.filter(
+      (s) =>
+        s.nameEnglish.toLowerCase().includes(query) ||
+        s.id.toString() === query ||
+        s.nameArabic.includes(query)
+    );
+  }, [surahs, searchQuery]);
+
   return (
     <div className="surah-sidebar">
       <div className="surah-sidebar-header">
-        <h2 style={{ margin: 0, fontSize: "0.9rem", fontWeight: 600 }}>Surahs</h2>
+        <input
+          type="text"
+          placeholder="Search Surah..."
+          className="surah-sidebar-search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
       <div className="surah-sidebar-content">
         {isLoading ? (
-          <div style={{ padding: "16px", textAlign: "center", color: "#aab8d4" }}>
-            Loading...
+          <div style={{ padding: "24px", textAlign: "center", color: "#aab8d4" }}>
+            Loading Surahs...
           </div>
-        ) : surahs.length === 0 ? (
-          <div style={{ padding: "16px", textAlign: "center", color: "#aab8d4" }}>
-            No surahs available
+        ) : filteredSurahs.length === 0 ? (
+          <div style={{ padding: "24px", textAlign: "center", color: "#aab8d4" }}>
+            No surahs found
           </div>
         ) : (
-          surahs.map((surah) => (
+          filteredSurahs.map((surah) => (
             <Link
               key={surah.id}
               href={`/surah/${surah.id}`}
               className={`surah-sidebar-item ${currentSurahId === surah.id ? "active" : ""}`}
+              onClick={onItemClick}
             >
               <span className="surah-sidebar-item-number">{surah.id}</span>
               <div className="surah-sidebar-item-names">

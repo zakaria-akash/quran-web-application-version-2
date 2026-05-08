@@ -53,11 +53,19 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       >
         <header className="settings-modal-header">
           <div>
-            <h2 className="settings-title">Reader Settings</h2>
+            <h2 className="settings-title">Settings</h2>
             <p className="settings-subtitle">
-              Customize Arabic and translation typography. Preferences are saved in your browser.
+              Customize text appearance.
             </p>
           </div>
+          <button 
+            type="button" 
+            onClick={onClose}
+            aria-label="Close settings"
+            style={{ background: "transparent", border: "none", color: "#fff", fontSize: "1.5rem", cursor: "pointer" }}
+          >
+            ✕
+          </button>
         </header>
 
         <div className="settings-modal-content">

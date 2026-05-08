@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSurahContent, getSurahList } from "@/lib/quran";
-import AyahSlider from "./ayah-slider";
+import AyahList from "./ayah-list";
 
 // This configuration ensures only generated static params are valid route entries.
 export const dynamicParams = false;
@@ -62,30 +62,39 @@ export default async function SurahDetailPage({ params, searchParams }: SurahDet
     notFound();
   }
 
-  // Optional ayah query allows deep-linking directly to a specific ayah panel.
-  const initialAyahNumber = parseRouteAyahNumber(resolvedSearchParams?.ayah);
-
   return (
-    <main className="surah-detail-page">
-      {/* This header identifies the Surah clearly in both naming styles. */}
-      <header className="surah-detail-header">
+    <div className="surah-detail-page" style={{ padding: "0 1.5rem" }}>
+      {/* Top navigation bar */}
+      <div className="surah-detail-topbar" style={{ paddingTop: "1rem" }}>
+        <Link href="/" className="back-link">
+          ← Back to Surahs
+        </Link>
+      </div>
+
+      {/* This header identifies the Surah clearly with full metadata. */}
+      <header className="surah-detail-header" style={{ textAlign: "center" }}>
         <h1 className="surah-detail-title">{surahMeta.nameEnglish}</h1>
         <p className="surah-detail-arabic-name">{surahMeta.nameArabic}</p>
-        <p className="surah-detail-meta">Surah {surahMeta.id}</p>
+        <div className="surah-detail-meta" style={{ display: "flex", justifyContent: "center", gap: "12px", color: "#aab8d4", fontSize: "0.9rem" }}>
+          <span>Surah {surahMeta.id}</span>
+          <span>•</span>
+          <span>{surahMeta.totalAyah} Ayahs</span>
+          <span>•</span>
+          <span>{surahMeta.revelationType}</span>
+        </div>
       </header>
 
       {/* If content is missing, we show an inline safe fallback instead of crashing. */}
       {surahContent.length === 0 ? (
         <section className="surah-empty-state" aria-live="polite">
           <p>No ayat data is currently available for this Surah.</p>
-          <Link href="/" className="back-link" style={{ display: "inline-block", marginTop: "16px" }}>
-            ← Back to Surahs
-          </Link>
         </section>
       ) : (
-        // Manual-only slider provides focused ayah reading with previous/next controls.
-        <AyahSlider ayat={surahContent} initialAyahNumber={initialAyahNumber} />
+        <div style={{ marginTop: "1.5rem" }}>
+          {/* All ayahs are loaded and displayed in a continuous list. */}
+          <AyahList ayat={surahContent} />
+        </div>
       )}
-    </main>
+    </div>
   );
 }

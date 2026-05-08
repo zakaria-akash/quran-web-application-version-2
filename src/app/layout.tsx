@@ -25,23 +25,27 @@ export default function RootLayout({
             <AppHeader />
 
             {/* Main content area with responsive layout */}
-            <div className="app-main-content">
-              {/* Sidebar (desktop only) */}
-              <div className="app-main-content-sidebar">
+            <main className="app-main-content">
+              {/* Left Sidebar (Desktop only) */}
+              <aside className="app-main-content-sidebar">
                 <SurahSidebar />
+              </aside>
+
+              {/* Center Content */}
+              <div className="app-main-content-center">
+                {children}
+                
+                {/* Minimal footer provides a stable endpoint for each page. */}
+                <footer className="app-footer">
+                  © 2026 Quran Mazid - Read, Study, and Learn The Quran
+                </footer>
               </div>
 
-              {/* Center content */}
-              <div className="app-main-content-center">{children}</div>
-
-              {/* Settings panel (desktop only) */}
-              <div className="app-main-content-settings">
+              {/* Right Settings Panel (Desktop only) */}
+              <aside className="app-main-content-settings">
                 <DesktopSettings />
-              </div>
-            </div>
-
-            {/* Minimal footer provides a stable endpoint for each page. */}
-            <footer className="app-footer">© 2025 Quran Mazid - Read, Study, and Learn The Quran</footer>
+              </aside>
+            </main>
           </div>
         </ReaderSettingsProvider>
       </body>

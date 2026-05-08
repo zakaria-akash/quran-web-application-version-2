@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import SettingsModal from "./settings/settings-modal";
 import { Surah, Translation } from "@/lib/quran";
+import SurahSidebar from "./surah-sidebar";
 
 const HEADER_SEARCH_DEBOUNCE_MS = 300;
 
@@ -69,6 +70,7 @@ export default function AppHeader() {
   const [isFocused, setIsFocused] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const searchShellRef = useRef<HTMLDivElement>(null);
   const trimmedQuery = useMemo(() => query.trim(), [query]);
@@ -159,93 +161,45 @@ export default function AppHeader() {
     setErrorMessage("");
     setIsLoading(false);
     setIsFocused(false);
+    setIsSearchOpen(false);
   };
 
   return (
     <>
       <header className="app-header">
-        <button
-          className="app-header-hamburger"
-          onClick={() => setIsNavDrawerOpen(!isNavDrawerOpen)}
-          aria-label="Toggle navigation menu"
-          aria-expanded={isNavDrawerOpen}
-        >
-          ☰
-        </button>
+        {/* Brand */}
+        <div className="app-header-brand-container" style={{ flex: 1, display: "flex", alignItems: "center" }}>
+          <button
+            className="app-header-hamburger"
+            onClick={() => setIsNavDrawerOpen(!isNavDrawerOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={isNavDrawerOpen}
+          >
+            ☰
+          </button>
+          <Link href="/" className="app-header-brand" style={{ marginLeft: "10px" }}>
+            <span>🌿</span>
+            Quran Mazid
+          </Link>
+        </div>
 
-        <Link href="/" className="app-header-brand">
-          <span>🌿</span>
-          Quran Mazid
-        </Link>
+        {/* Search & Actions */}
+        <div className="app-header-actions-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Search Icon */}
+          <button 
+            onClick={() => setIsSearchOpen(!isSearchOpen)} 
+            className="app-header-settings-icon" 
+            aria-label="Search"
+          >
+            🔍
+          </button>
 
-        <div className="app-header-controls">
-          <div className="app-header-search-shell" ref={searchShellRef}>
-            <label htmlFor="global-header-search" className="visually-hidden">
-              Search translation text or Surah name
-            </label>
-            <input
-              id="global-header-search"
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") setIsFocused(false);
-              }}
-              placeholder="Search..."
-              className="app-header-search-input"
-            />
+          {/* Theme Toggle Icon (Placeholder) */}
+          <button className="app-header-settings-icon" aria-label="Toggle theme">
+            🌙
+          </button>
 
-            {showPanel && (
-              <div className="app-header-search-panel" role="listbox" aria-label="Header search results">
-                {isLoading && <p className="app-header-search-status">Searching...</p>}
-                {errorMessage && <p className="app-header-search-error">{errorMessage}</p>}
-
-                {!isLoading && !errorMessage && surahMatches.length > 0 && (
-                  <div className="app-header-search-group">
-                    <p className="app-header-search-group-title">Surahs</p>
-                    {surahMatches.map((surah) => (
-                      <Link
-                        key={surah.id}
-                        href={`/surah/${surah.id}`}
-                        className="app-header-search-result"
-                        onClick={handleResultSelection}
-                      >
-                        <span className="app-header-search-result-meta">
-                          Surah {surah.id} | {surah.nameEnglish}
-                        </span>
-                        <span className="app-header-search-result-text">{surah.nameArabic}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                {!isLoading && !errorMessage && trimmedQuery && results.length > 0 && (
-                  <div className="app-header-search-group">
-                    <p className="app-header-search-group-title">Ayah Matches</p>
-                    {results.map((result) => (
-                      <Link
-                        key={`${result.surahId}-${result.ayahNumber}-${result.text}`}
-                        href={`/surah/${result.surahId}?ayah=${result.ayahNumber}`}
-                        className="app-header-search-result"
-                        onClick={handleResultSelection}
-                      >
-                        <span className="app-header-search-result-meta">
-                          Surah {result.surahId} | Ayah {result.ayahNumber}
-                        </span>
-                        <span className="app-header-search-result-text">{result.text}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                {!isLoading && !errorMessage && trimmedQuery && surahMatches.length === 0 && results.length === 0 && (
-                  <p className="app-header-search-status">No matches found.</p>
-                )}
-              </div>
-            )}
-          </div>
-
+          {/* Settings Icon */}
           <button
             type="button"
             className="app-header-settings-icon"
@@ -254,52 +208,68 @@ export default function AppHeader() {
           >
             ⚙️
           </button>
-
-          <button
-            type="button"
-            className="app-header-settings-button"
-            onClick={() => setIsSettingsModalOpen(true)}
-          >
-            Settings
-          </button>
         </div>
       </header>
 
-      {isNavDrawerOpen && (
-        <div className="drawer-backdrop open" onClick={() => setIsNavDrawerOpen(false)} />
+      {/* Search Modal */}
+      {isSearchOpen && (
+        <div className="settings-modal-backdrop" onClick={() => setIsSearchOpen(false)}>
+          <div className="settings-modal" onClick={(e) => e.stopPropagation()} style={{ padding: "20px" }}>
+            <div className="app-header-search-shell" style={{ width: "100%" }}>
+              <input
+                id="global-header-search"
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onFocus={() => setIsFocused(true)}
+                placeholder="Search..."
+                className="app-header-search-input"
+                style={{ background: "#222" }}
+                autoFocus
+              />
+              {showPanel && (
+                <div className="app-header-search-panel" role="listbox" aria-label="Search results" style={{ position: "relative" }}>
+                   {isLoading && <p className="app-header-search-status">Searching...</p>}
+                   {surahMatches.map((surah) => (
+                      <Link key={surah.id} href={`/surah/${surah.id}`} className="app-header-search-result" onClick={handleResultSelection}>
+                        {surah.nameEnglish}
+                      </Link>
+                    ))}
+                    {results.map((result) => (
+                      <Link key={`${result.surahId}-${result.ayahNumber}`} href={`/surah/${result.surahId}?ayah=${result.ayahNumber}`} className="app-header-search-result" onClick={handleResultSelection}>
+                        {result.text}
+                      </Link>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Navigation Drawer */}
+      <div 
+        className={`drawer-backdrop ${isNavDrawerOpen ? "open" : ""}`} 
+        onClick={() => setIsNavDrawerOpen(false)} 
+      />
 
       <nav className={`drawer ${isNavDrawerOpen ? "open" : ""}`}>
         <div className="drawer-header">
-          <h2 className="app-header-brand" style={{ fontSize: "1.1rem", margin: 0 }}>
+          <Link href="/" className="app-header-brand" onClick={() => setIsNavDrawerOpen(false)}>
             <span>🌿</span>
             Quran Mazid
-          </h2>
+          </Link>
           <button
             className="drawer-close-button"
             onClick={() => setIsNavDrawerOpen(false)}
             aria-label="Close navigation menu"
+            style={{ background: "transparent", border: "none", color: "#fff", fontSize: "1.5rem", cursor: "pointer" }}
           >
             ✕
           </button>
         </div>
         <div className="drawer-content">
-          <div className="surah-sidebar">
-            {surahs.map((surah) => (
-              <Link
-                key={surah.id}
-                href={`/surah/${surah.id}`}
-                className="surah-sidebar-item"
-                onClick={() => setIsNavDrawerOpen(false)}
-              >
-                <span className="surah-sidebar-item-number">{surah.id}</span>
-                <div className="surah-sidebar-item-names">
-                  <span className="surah-sidebar-item-english">{surah.nameEnglish}</span>
-                  <span className="surah-sidebar-item-arabic">{surah.nameArabic}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <SurahSidebar onItemClick={() => setIsNavDrawerOpen(false)} />
         </div>
       </nav>
 
