@@ -1,50 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useMemo } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Surah } from "@/lib/quran";
 
 interface SurahSidebarProps {
+  surahs: Surah[];
   onItemClick?: () => void;
 }
 
-export default function SurahSidebar({ onItemClick }: SurahSidebarProps) {
-  const [surahs, setSurahs] = useState<Surah[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default function SurahSidebar({ surahs, onItemClick }: SurahSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const pathname = usePathname();
 
-  const currentSurahId = pathname.startsWith("/surah/") ? parseInt(pathname.split("/")[2]) : null;
-
-  useEffect(() => {
-    async function loadSurahs() {
-      try {
-        const response = await fetch("/api/quran");
-        if (response.ok) {
-          const data = await response.json();
-          setSurahs(Array.isArray(data?.surahs) ? data.surahs : []);
-        }
-      } catch (error) {
-        console.error("Failed to load surahs:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadSurahs();
-  }, []);
+  const currentSurahId = pathname.startsWith("/surah/") ? parseInt(pathname.split("/")[2], 10) : null;
 
   const filteredSurahs = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return surahs;
+    const query = deferredSearchQuery.toLowerCase().trim();
+    if (!query) {
+      return surahs;
+    }
+
     return surahs.filter(
-      (s) =>
-        s.nameEnglish.toLowerCase().includes(query) ||
-        s.id.toString() === query ||
-        s.nameArabic.includes(query)
+      (surah) =>
+        surah.nameEnglish.toLowerCase().includes(query) ||
+        surah.id.toString() === query ||
+        surah.nameArabic.includes(query),
     );
-  }, [surahs, searchQuery]);
+  }, [deferredSearchQuery, surahs]);
 
   return (
     <div className="surah-sidebar">
@@ -54,18 +39,13 @@ export default function SurahSidebar({ onItemClick }: SurahSidebarProps) {
           placeholder="Search Surah..."
           className="surah-sidebar-search"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(event) => setSearchQuery(event.target.value)}
         />
       </div>
+
       <div className="surah-sidebar-content">
-        {isLoading ? (
-          <div style={{ padding: "24px", textAlign: "center", color: "#aab8d4" }}>
-            Loading Surahs...
-          </div>
-        ) : filteredSurahs.length === 0 ? (
-          <div style={{ padding: "24px", textAlign: "center", color: "#aab8d4" }}>
-            No surahs found
-          </div>
+        {filteredSurahs.length === 0 ? (
+          <div className="sidebar-status">No Surahs found.</div>
         ) : (
           filteredSurahs.map((surah) => (
             <Link

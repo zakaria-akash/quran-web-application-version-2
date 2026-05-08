@@ -37,6 +37,12 @@ This document summarizes the responsive UI decisions that define the current ver
 - Search opens in a modal rather than occupying persistent desktop header width
 - Results include both Surah matches and translation ayah matches
 
+### 7. Functional Theme Toggle
+
+- The header theme control now switches between dark and light modes
+- Theme state is persisted between sessions
+- The app still boots in dark mode by default on first paint
+
 ## Key Files Updated for the Current UI
 
 - `src/app/layout.tsx`

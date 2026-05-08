@@ -4,6 +4,7 @@ import { ReaderSettingsProvider } from "./settings-provider";
 import AppHeader from "./app-header";
 import SurahSidebar from "./surah-sidebar";
 import DesktopSettings from "./desktop-settings";
+import { getSurahList } from "@/lib/quran";
 
 export const metadata: Metadata = {
   title: "Quran Mazid",
@@ -15,38 +16,33 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <body suppressHydrationWarning>
-        {/* Global provider makes settings available across all client views. */}
-        <ReaderSettingsProvider>
-          {/* The app shell keeps header/footer consistent across all routes. */}
-          <div className="app-shell">
-            <AppHeader />
+  const surahs = await getSurahList();
 
-            {/* Main content area with responsive layout */}
+  return (
+    <html lang="en" data-theme="dark" style={{ colorScheme: "dark" }}>
+      <body suppressHydrationWarning>
+        <ReaderSettingsProvider>
+          <div className="app-shell">
+            <AppHeader surahs={surahs} />
+
             <main className="app-main-content">
-              {/* Left Sidebar (Desktop only) */}
               <aside className="app-main-content-sidebar">
-                <SurahSidebar />
+                <SurahSidebar surahs={surahs} />
               </aside>
 
-              {/* Center Content */}
               <div className="app-main-content-center">
                 {children}
-                
-                {/* Minimal footer provides a stable endpoint for each page. */}
+
                 <footer className="app-footer">
-                  © 2026 Quran Mazid - Read, Study, and Learn The Quran
+                  © 2026 Quran Mazid - Read, Study, and Learn The Quran | Zakaria Ibrahim | zakaria.93@yahoo.com
                 </footer>
               </div>
 
-              {/* Right Settings Panel (Desktop only) */}
               <aside className="app-main-content-settings">
                 <DesktopSettings />
               </aside>

@@ -56,14 +56,14 @@ Mobile and tablet use a single-column layout.
 ### Desktop Header
 
 - Brand on the left
-- Search trigger on the right with other action buttons
+- Search trigger on the right with theme and other action buttons
 - No hamburger menu
 
 ### Mobile Header
 
 - Hamburger button visible
 - Brand remains visible
-- Search and settings action buttons remain accessible
+- Search, theme, and settings action buttons remain accessible
 
 ## Search UI
 
@@ -83,6 +83,13 @@ Mobile and tablet use a single-column layout.
 ### Mobile
 
 - Settings open inside a right-side drawer
+
+## Theme Behavior
+
+- Theme toggle is available from the global header on both desktop and mobile
+- Supported modes are dark and light
+- Dark mode is the default server-rendered theme
+- Saved theme preference is restored after hydration
 
 ## Reader Typography
 

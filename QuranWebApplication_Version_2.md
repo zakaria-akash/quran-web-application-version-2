@@ -18,6 +18,8 @@ This document records the current implemented version of the project and superse
 - Mobile navigation drawer
 - Mobile settings drawer
 - Reader setting persistence
+- Theme persistence with working dark/light toggle
+- Dark-by-default server-rendered theme baseline
 - Internal JSON-backed API routes
 
 ## Current Non-Features
@@ -71,6 +73,7 @@ The current implementation differs in several important ways:
 - `src/app/settings-provider.tsx`
 - `src/lib/quran.ts`
 - `src/lib/settings.ts`
+- `src/app/globals.css`
 
 ## Verification Snapshot
 

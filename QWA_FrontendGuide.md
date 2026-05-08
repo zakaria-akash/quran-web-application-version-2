@@ -9,6 +9,7 @@ This guide documents the current frontend implementation of Quran Web Applicatio
 - TypeScript
 - Custom CSS in `src/app/globals.css`
 - Client-side persisted settings via `localStorage`
+- Client-side persisted theme mode via `localStorage`
 
 ## Frontend Structure
 
@@ -41,6 +42,7 @@ src/app/
 - `src/app/layout.tsx`
   - Defines metadata
   - Wraps the tree with `ReaderSettingsProvider`
+  - Server-renders `<html>` with dark theme as the default baseline
   - Renders:
     - `AppHeader`
     - desktop `SurahSidebar`
@@ -76,6 +78,7 @@ src/app/
   - Global header rendered on all routes
   - Handles:
     - desktop search trigger
+    - dark/light theme toggle
     - mobile navigation drawer
     - mobile settings drawer
     - modal search UI
@@ -110,9 +113,9 @@ All active styling is centralized in `src/app/globals.css`.
 
 Key design characteristics:
 
-- Dark gradient background
+- Dark-first visual system with a fully designed light mode
 - Green accent color for active states
-- Light text on dark surfaces
+- Semantic theme tokens shared across both modes
 - Fixed desktop side columns
 - Drawer-driven mobile interactions
 
@@ -120,9 +123,6 @@ Key CSS variables:
 
 ```css
 :root {
-  --color-black: #0a0a0a;
-  --color-navy: #0d1b2a;
-  --color-text-light: #e0e1dd;
   --color-primary: #22c55e;
   --sidebar-width: 280px;
   --settings-width: 300px;
@@ -130,6 +130,9 @@ Key CSS variables:
   --qwa-arabic-font-family: "Amiri", serif;
   --qwa-arabic-font-size: 36px;
   --qwa-translation-font-size: 18px;
+  --color-bg-start: ...;
+  --color-bg-end: ...;
+  --color-text: ...;
 }
 ```
 
@@ -148,6 +151,14 @@ Key CSS variables:
 - Sidebar hidden from layout and opened as a drawer
 - Settings opened as a drawer
 - Search shown in a modal
+
+## Theme System
+
+- Theme state is owned by `src/app/settings-provider.tsx`
+- Supported modes: `dark` and `light`
+- The current theme is stored in `localStorage` under a dedicated theme key
+- The active theme is applied through `document.documentElement.dataset.theme`
+- The server-rendered baseline remains dark to avoid a light flash on hard reload
 
 ## Reader Settings Integration
 

@@ -19,6 +19,8 @@ Quran Web Application 2.0 is a responsive Quran reader built with Next.js App Ro
 - Provides an always-open desktop settings panel
 - Provides mobile navigation and settings drawers
 - Saves reader typography preferences to `localStorage`
+- Supports a persisted dark/light theme toggle
+- Uses dark mode as the default first-render theme on server load and hard reload
 
 ## Current UX Model
 
@@ -27,6 +29,7 @@ Quran Web Application 2.0 is a responsive Quran reader built with Next.js App Ro
 - Left sidebar: searchable Surah list
 - Center column: active Surah reader
 - Right sidebar: always-open settings panel
+- Theme toggle available in the global header
 
 ### Mobile and Tablet
 
@@ -34,6 +37,7 @@ Quran Web Application 2.0 is a responsive Quran reader built with Next.js App Ro
 - Navigation opens from a left drawer
 - Settings open from a right drawer
 - Search opens in a modal
+- Theme toggle remains available in the header
 
 ## Core Routes
 
@@ -64,6 +68,7 @@ Quran Web Application 2.0 is a responsive Quran reader built with Next.js App Ro
 - `src/lib/quran.ts` loads and normalizes dataset files
 - `src/lib/settings.ts` manages validation and persistence for reader settings
 - `src/app/settings-provider.tsx` provides app-wide settings state
+- `src/app/settings-provider.tsx` also persists and applies the active theme mode
 - `src/app/api/*` exposes normalized data and search routes
 - `src/app/globals.css` contains the active visual system and responsive behavior
 

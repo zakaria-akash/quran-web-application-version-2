@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
   useSyncExternalStore,
 } from "react";
 import {
@@ -16,11 +17,18 @@ import {
   Settings,
 } from "@/lib/settings";
 
+export type ThemeMode = "dark" | "light";
+
 interface ReaderSettingsContextValue {
   settings: Settings;
+  theme: ThemeMode;
   updateSettings: (partialUpdate: Partial<Settings>) => void;
   resetSettings: () => void;
+  setTheme: (theme: ThemeMode) => void;
+  toggleTheme: () => void;
 }
+
+const THEME_STORAGE_KEY = "qwa-theme-mode";
 
 // This context carries reader settings and mutators to any client component in the app tree.
 const ReaderSettingsContext = createContext<ReaderSettingsContextValue | null>(null);
@@ -75,6 +83,15 @@ function hydrateSettingsStoreFromStorage() {
   }
 }
 
+function getInitialThemeMode(): ThemeMode {
+  if (typeof window === "undefined") {
+    return "dark";
+  }
+
+  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+  return storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
+}
+
 // This hook gives consumer components typed access to settings state and actions.
 export function useReaderSettings() {
   const contextValue = useContext(ReaderSettingsContext);
@@ -84,57 +101,68 @@ export function useReaderSettings() {
   return contextValue;
 }
 
-// This provider centralizes settings persistence and applies CSS variables for global styling.
+// This provider centralizes settings persistence, theme persistence, and global CSS variables.
 export function ReaderSettingsProvider({ children }: { children: React.ReactNode }) {
-  // External-store hydration keeps first client render aligned with server-rendered markup.
   const settings = useSyncExternalStore(
     subscribeToSettingsStore,
     getSettingsClientSnapshot,
     getSettingsServerSnapshot,
   );
+  const [theme, setThemeState] = useState<ThemeMode>(getInitialThemeMode);
 
-  // Hydrate persisted settings after mount so SSR and initial hydration remain deterministic.
   useEffect(() => {
     hydrateSettingsStoreFromStorage();
   }, []);
 
-  // This callback merges updates, persists them, and updates state in one path.
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
   const updateSettings = useCallback((partialUpdate: Partial<Settings>) => {
     const mergedSettings = mergeSettingsWithDefaults({ ...currentSettingsSnapshot, ...partialUpdate });
     saveSettingsToStorage(mergedSettings);
-
-    // Store snapshot is updated before notification so subscribers read the latest values.
     currentSettingsSnapshot = mergedSettings;
     emitSettingsStoreChange();
   }, []);
 
-  // This callback restores defaults and persists the reset immediately.
   const resetSettings = useCallback(() => {
     const defaultSettings = getDefaultSettings();
     saveSettingsToStorage(defaultSettings);
-
-    // Reset updates store snapshot and triggers a re-render for subscribed components.
     currentSettingsSnapshot = defaultSettings;
     emitSettingsStoreChange();
   }, []);
 
-  // These CSS variables apply reader preferences to all descendant pages consistently.
+  const setTheme = useCallback((nextTheme: ThemeMode) => {
+    setThemeState(nextTheme);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
+  }, []);
+
   const cssVariables = useMemo(() => ({
     "--qwa-arabic-font-family": `"${settings.arabicFontFamily}", serif`,
     "--qwa-arabic-font-size": `${settings.arabicFontSize}px`,
     "--qwa-translation-font-size": `${settings.translationFontSize}px`,
   } as React.CSSProperties), [settings]);
 
-  // The memoized context value prevents avoidable downstream re-renders.
   const contextValue = useMemo(() => ({
     settings,
+    theme,
     updateSettings,
     resetSettings,
-  }), [resetSettings, settings, updateSettings]);
+    setTheme,
+    toggleTheme,
+  }), [resetSettings, setTheme, settings, theme, toggleTheme, updateSettings]);
 
   return (
     <ReaderSettingsContext.Provider value={contextValue}>
-      {/* This wrapper injects CSS variables so server and client views share typography settings. */}
       <div className="reader-settings-scope" style={cssVariables}>
         {children}
       </div>

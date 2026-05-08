@@ -15,6 +15,8 @@ This checklist reflects the current application behavior after the TypeScript mi
 - Mobile navigation and settings use drawers
 - Search supports Surah name and translation text matching
 - Reader settings persist in `localStorage`
+- Theme mode persists in `localStorage`
+- Default first paint remains dark on hard reload and server start
 
 ## Route Checklist
 
@@ -50,6 +52,7 @@ Validation checks:
 - `npm run build` passes
 - `npm run lint` runs successfully
 - Static Surah params are generated for the available Surah routes
+- Theme toggle changes the global app surface styling in both desktop and mobile layouts
 
 ## Known Current Notes
 

@@ -8,6 +8,7 @@ Production URL:
 
 - TypeScript migration: Completed
 - Responsive UI redesign: Completed
+- Functional dark/light theme system: Completed
 - Desktop 3-column reading layout: Completed
 - Mobile drawer interactions: Completed
 - Local dataset and API routes: Completed
@@ -22,6 +23,7 @@ Quran Web Application 2.0 currently ships as:
 - A desktop-first reader that opens directly to Al-Fatiha
 - A Surah sidebar and settings panel on desktop
 - Mobile navigation and settings drawers
+- A persisted dark/light theme system with server-rendered dark default
 - Local JSON-backed API routes and reader pages
 
 ## Original Goals vs Current Outcome
@@ -86,7 +88,16 @@ On desktop:
 
 This supports a reading-first workflow and avoids duplicating Surah browsing on the homepage.
 
-### 4. JSON-Backed Data Layer
+### 4. Persisted Theme With Dark Default
+
+The app now includes a global theme mode:
+
+- controlled from the header
+- persisted in `localStorage`
+- applied through root `data-theme`
+- server-rendered as dark by default for hard reload stability
+
+### 5. JSON-Backed Data Layer
 
 The application continues to use local JSON files rather than a database. This keeps deployment simple and makes static generation and route-handler logic predictable.
 

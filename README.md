@@ -15,6 +15,8 @@ Quran Web Application 2.0 is a production-ready Quran reader built with Next.js 
 - Desktop 3-column layout: Surah sidebar, reader content, settings panel
 - Mobile drawer navigation and mobile settings drawer
 - Reader typography settings persisted in `localStorage`
+- Fully functional dark/light theme toggle persisted in `localStorage`
+- Server-rendered dark theme baseline for hard reloads and first paint
 - TypeScript codebase across app, API, scripts, and utilities
 
 ## Scope
@@ -23,6 +25,7 @@ Quran Web Application 2.0 is a production-ready Quran reader built with Next.js 
 
 - Responsive Surah reader
 - Search by Surah name and translation text
+- Theme switching between dark and light modes
 - Reader settings:
   - Arabic font family
   - Arabic font size
@@ -103,6 +106,8 @@ Note:
 - `src/app/settings-provider.tsx`
   - App-wide reader settings store
   - Uses `useSyncExternalStore`
+  - Persists theme mode
+  - Applies dark/light theme through `data-theme` on the document root
   - Applies typography settings through CSS variables
 
 ### API Routes
@@ -184,6 +189,7 @@ quran-web-application/
    - Reader content in the center
    - Settings panel on the right
 5. Mobile users use drawers for navigation and settings
+6. Initial server-rendered theme is dark, then any saved theme preference is applied on the client
 
 ### Reader Flow
 
@@ -216,6 +222,9 @@ Important current behavior:
 
 - `src/app/settings/settings-content.tsx`
   - Settings controls and live preview
+
+- `src/app/settings-provider.tsx`
+  - Owns persisted theme state and reader settings state
 
 - `src/app/surah/[id]/ayah-list.tsx`
   - Primary active reading component
