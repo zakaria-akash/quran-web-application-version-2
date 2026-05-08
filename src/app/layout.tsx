@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ReaderSettingsProvider } from "./settings-provider";
 import AppHeader from "./app-header";
+import SurahSidebar from "./surah-sidebar";
+import DesktopSettings from "./desktop-settings";
 
 export const metadata: Metadata = {
-  title: "Quran Web Application",
-  description: "Quran Web Application",
+  title: "Quran Mazid",
+  description: "Read, Study, and Learn The Quran",
 };
 
 export default function RootLayout({
@@ -22,11 +24,24 @@ export default function RootLayout({
           <div className="app-shell">
             <AppHeader />
 
-            {/* Main content area renders route-specific page content. */}
-            <div className="app-main-content">{children}</div>
+            {/* Main content area with responsive layout */}
+            <div className="app-main-content">
+              {/* Sidebar (desktop only) */}
+              <div className="app-main-content-sidebar">
+                <SurahSidebar />
+              </div>
+
+              {/* Center content */}
+              <div className="app-main-content-center">{children}</div>
+
+              {/* Settings panel (desktop only) */}
+              <div className="app-main-content-settings">
+                <DesktopSettings />
+              </div>
+            </div>
 
             {/* Minimal footer provides a stable endpoint for each page. */}
-            <footer className="app-footer">Quran Web Application</footer>
+            <footer className="app-footer">© 2025 Quran Mazid - Read, Study, and Learn The Quran</footer>
           </div>
         </ReaderSettingsProvider>
       </body>

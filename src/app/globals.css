@@ -3,11 +3,23 @@
   --color-black: #0a0a0a;
   --color-navy: #0d1b2a;
   --color-text-light: #e0e1dd;
+  --color-primary: #22c55e;
+  --color-primary-hover: #16a34a;
   --font-ui: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   --qwa-arabic-font-family: "Amiri", serif;
   --qwa-arabic-font-size: 36px;
-    --qwa-translation-font-size: 18px;
+  --qwa-translation-font-size: 18px;
   --header-control-radius: 10px;
+  --sidebar-width: 280px;
+  --settings-width: 300px;
+}
+
+/* Responsive breakpoints for mobile-first design */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 100vw;
+    --settings-width: 100vw;
+  }
 }
 
 /* Global reset for predictable box sizing behavior across components. */
@@ -43,6 +55,113 @@ body {
 /* Main content grows to keep footer pinned to the bottom on short pages. */
 .app-main-content {
   flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Desktop 3-column layout: sidebar | main | settings */
+@media (min-width: 1281px) {
+  .app-main-content {
+    flex-direction: row;
+  }
+
+  .app-main-content-sidebar {
+    display: flex;
+    width: var(--sidebar-width);
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    overflow-y: auto;
+  }
+
+  .app-main-content-center {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .app-main-content-settings {
+    display: flex;
+    width: var(--settings-width);
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    overflow-y: auto;
+  }
+}
+
+/* Mobile single-column layout */
+@media (max-width: 1280px) {
+  .app-main-content {
+    flex-direction: column;
+  }
+
+  .app-main-content-sidebar {
+    display: none;
+  }
+
+  .app-main-content-center {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .app-main-content-settings {
+    display: none;
+  }
+}
+
+/* Global header appears on every route with search and settings access. */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  backdrop-filter: blur(8px);
+  background: rgba(10, 10, 10, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Header layout for desktop */
+@media (min-width: 1281px) {
+  .app-header {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Header layout for mobile */
+@media (max-width: 1280px) {
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* Hamburger menu for mobile */
+.app-header-hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 8px;
+  border-radius: var(--header-control-radius);
+}
+
+@media (max-width: 1280px) {
+  .app-header-hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app-header-hamburger:hover,
+  .app-header-hamburger:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    outline: 2px solid #9fb7ff;
+    outline-offset: 2px;
+  }
 }
 
 /* Global header appears on every route with search and settings access. */
@@ -65,9 +184,23 @@ body {
   color: #f0f2f7;
   text-decoration: none;
   font-weight: 700;
-  font-size: clamp(1.25rem, 1.25vw + 0.9rem, 1.7rem);
-    line-height: 1.15;
+  font-size: clamp(1.1rem, 1.25vw + 0.9rem, 1.7rem);
+  line-height: 1.15;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 1280px) {
+  .app-header-brand {
+    font-size: 1.1rem;
+  }
+
+  .app-header-brand-icon {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 /* Control group is right-aligned as a single unit in desktop and large layouts. */
@@ -80,10 +213,23 @@ body {
   width: 100%;
 }
 
+@media (max-width: 1280px) {
+  .app-header-controls {
+    width: auto;
+    gap: 8px;
+  }
+}
+
 /* Search shell is a positioning anchor for the dropdown panel. */
 .app-header-search-shell {
   position: relative;
   width: min(100%, 460px);
+}
+
+@media (max-width: 1280px) {
+  .app-header-search-shell {
+    width: min(100%, 300px);
+  }
 }
 
 /* Header search input keeps styling minimal while preserving contrast. */
@@ -177,7 +323,8 @@ body {
 }
 
 /* Header settings action stays globally accessible as requested. */
-.app-header-settings-button {
+.app-header-settings-button,
+.app-header-settings-icon {
   border-radius: var(--header-control-radius);
   border: 1px solid rgba(159, 183, 255, 0.35);
   background: rgba(159, 183, 255, 0.18);
@@ -187,18 +334,253 @@ body {
   padding: 8px 12px;
   white-space: nowrap;
   cursor: pointer;
-    font: inherit;
+  font: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Button feedback keeps focus and hover behavior clear and accessible. */
 .app-header-settings-button:hover,
-.app-header-settings-button:focus-visible {
+.app-header-settings-button:focus-visible,
+.app-header-settings-icon:hover,
+.app-header-settings-icon:focus-visible {
   background: rgba(159, 183, 255, 0.3);
   outline: 2px solid #9fb7ff;
   outline-offset: 2px;
 }
 
-/* Visually hidden utility keeps labels available to assistive technologies. */
+@media (max-width: 1280px) {
+  .app-header-settings-button {
+    padding: 8px;
+    border: none;
+    background: transparent;
+    font-size: 1.25rem;
+  }
+
+  .app-header-settings-button:hover,
+  .app-header-settings-button:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Mobile drawer backdrop */
+.drawer-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 30;
+}
+
+@media (max-width: 1280px) {
+  .drawer-backdrop.open {
+    display: block;
+  }
+}
+
+/* Mobile drawer styles */
+.drawer {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: rgba(10, 10, 10, 0.95);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  overflow-y: auto;
+  z-index: 40;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 1280px) {
+  .drawer {
+    display: block;
+  }
+
+  .drawer.open {
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 1281px) {
+  .drawer {
+    display: none !important;
+  }
+}
+
+/* Drawer header */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  position: sticky;
+  top: 0;
+  background: rgba(10, 10, 10, 0.95);
+  z-index: 41;
+}
+
+.drawer-close-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawer-close-button:hover,
+.drawer-close-button:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--header-control-radius);
+}
+
+/* Drawer content */
+.drawer-content {
+  padding: 16px;
+}
+
+/* Settings modal responsive styles */
+.settings-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+}
+
+@media (min-width: 1281px) {
+  .settings-modal-backdrop {
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+}
+
+.settings-modal {
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 500px;
+}
+
+@media (max-width: 1280px) {
+  .settings-modal {
+    border-radius: 16px 16px 0 0;
+    max-height: 90vh;
+  }
+}
+
+@media (min-width: 1281px) {
+  .settings-modal {
+    border-radius: 0;
+    max-height: 100vh;
+    width: var(--settings-width);
+  }
+}
+
+/* Sidebar for surah list (desktop only) */
+.surah-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+@media (max-width: 1280px) {
+  .surah-sidebar {
+    display: none;
+  }
+}
+
+.surah-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 10, 10, 0.5);
+}
+
+.surah-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+/* Surah sidebar list items */
+.surah-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--color-text-light);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.surah-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.surah-sidebar-item.active {
+  background: rgba(34, 197, 94, 0.1);
+  border-left-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.surah-sidebar-item-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(159, 183, 255, 0.16);
+  font-weight: 600;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.surah-sidebar-item.active .surah-sidebar-item-number {
+  background: var(--color-primary);
+  color: #000;
+}
+
+.surah-sidebar-item-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.surah-sidebar-item-english {
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+}
+
+.surah-sidebar-item-arabic {
+  font-size: 0.85rem;
+  font-family: var(--qwa-arabic-font-family);
+  color: #aab8d4;
+  direction: rtl;
+  text-align: right;
+}
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -210,7 +592,137 @@ body {
   border: 0;
 }
 
-/* Footer remains intentionally minimal and consistent across the app. */
+/* Jump menu dropdown */
+.ayah-jump-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(13, 27, 42, 0.96);
+  border: 1px solid rgba(159, 183, 255, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.ayah-jump-menu-item {
+  padding: 10px 12px;
+  color: var(--color-text-light);
+  cursor: pointer;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.15s ease;
+}
+
+.ayah-jump-menu-item:first-child {
+  border-top: none;
+}
+
+.ayah-jump-menu-item:hover {
+  background: rgba(159, 183, 255, 0.18);
+}
+
+/* Settings modal header */
+.settings-modal-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.settings-title {
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.settings-subtitle {
+  margin: 0;
+  color: #aab8d4;
+  font-size: 0.9rem;
+}
+
+/* Settings modal content */
+.settings-modal-content {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Settings modal footer */
+.settings-modal-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  gap: 8px;
+}
+
+.settings-modal-close {
+  flex: 1;
+  padding: 10px 16px;
+  background: var(--color-primary);
+  color: #000;
+  border: none;
+  border-radius: var(--header-control-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-modal-close:hover,
+.settings-modal-close:focus-visible {
+  background: var(--color-primary-hover);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1280px) {
+  .settings-modal-footer {
+    padding: 12px 16px;
+  }
+
+  .settings-modal-close {
+    padding: 12px;
+  }
+}
+
+/* Settings panel for desktop */
+.settings-panel-desktop {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px 0;
+}
+
+.settings-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.settings-panel-toggle {
+  background: transparent;
+  border: none;
+  color: var(--color-text-light);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-panel-toggle:hover {
+  color: var(--color-primary);
+}
+
+.settings-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
 .app-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   color: #b8bfd0;
@@ -232,11 +744,19 @@ body {
 
 /* This page wrapper provides breathing room around the Surah index content. */
 .surah-list-page {
-  min-height: 100vh;
+  min-height: 100%;
   padding: 24px;
-  max-width: 1100px;
+  max-width: 100%;
   margin: 0 auto;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1280px) {
+  .surah-list-page {
+    padding: 16px;
+  }
 }
 
 /* The title is intentionally prominent to anchor the reading interface. */
@@ -337,10 +857,46 @@ body {
 
 /* Detail page container centers content and ensures readability on all screens. */
 .surah-detail-page {
-  min-height: 100vh;
+  min-height: 100%;
   max-width: 980px;
   margin: 0 auto;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .surah-detail-page {
+    padding: 16px;
+  }
+}
+
+/* Surah detail header */
+.surah-detail-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.surah-detail-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.5rem);
+  font-weight: 600;
+}
+
+.surah-detail-arabic-name {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  font-family: var(--qwa-arabic-font-family);
+  color: #9fb7ff;
+  direction: rtl;
+}
+
+.surah-detail-meta {
+  margin: 0;
+  color: #8a94b3;
+  font-size: 0.9rem;
 }
 
 /* Top bar keeps the back link in a stable place across Surah pages. */
@@ -383,11 +939,17 @@ body {
   border-radius: 16px;
 }
 
+@media (max-width: 768px) {
+  .ayah-slider-viewport {
+    border-radius: 12px;
+  }
+}
+
 /* Track uses translate animation for smooth prev/next transitions. */
 .ayah-slider-track {
   display: flex;
   align-items: flex-start;
-    width: 100%;
+  width: 100%;
   min-height: 1px;
   transition: transform 280ms ease;
   will-change: transform;
@@ -397,7 +959,7 @@ body {
 .ayah-slide {
   flex: 0 0 100%;
   display: flex;
-    flex-direction: column;
+  flex-direction: column;
   width: 100%;
   height: fit-content;
   box-sizing: border-box;
@@ -407,7 +969,15 @@ body {
   padding: 18px;
   overflow-y: visible;
 }
-.ayah-slide>* {
+
+@media (max-width: 768px) {
+  .ayah-slide {
+    border-radius: 12px;
+    padding: 14px;
+  }
+}
+
+.ayah-slide > * {
   max-width: 100%;
 }
 
@@ -451,6 +1021,39 @@ body {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 10px;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .ayah-slider-controls {
+    gap: 8px;
+    margin-top: 12px;
+  }
+}
+
+/* Navigation buttons */
+.ayah-slider-nav-button {
+  background: rgba(159, 183, 255, 0.18);
+  border: 1px solid rgba(159, 183, 255, 0.35);
+  color: #dbe6ff;
+  border-radius: var(--header-control-radius);
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.ayah-slider-nav-button:hover:not(:disabled),
+.ayah-slider-nav-button:focus-visible {
+  background: rgba(159, 183, 255, 0.3);
+  outline: 2px solid #9fb7ff;
+  outline-offset: 2px;
+}
+
+.ayah-slider-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Jump control gives direct ayah access in a compact, professional toolbar pattern. */
@@ -462,10 +1065,23 @@ body {
   gap: 8px;
 }
 
+@media (max-width: 768px) {
+  .ayah-slider-jump {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
 .ayah-slider-jump-label {
   color: #c8d1e9;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .ayah-slider-jump-label {
+    display: none;
+  }
 }
 
 .ayah-slider-jump-field {

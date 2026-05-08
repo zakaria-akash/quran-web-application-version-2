@@ -9,10 +9,10 @@ export default async function Home() {
   return (
     <main className="surah-list-page">
       {/* This heading establishes the page purpose for users and accessibility tools. */}
-      <h1 className="surah-list-title">Quran Web Application</h1>
+      <h1 className="surah-list-title">The Holy Quran</h1>
 
       {/* This supporting text clarifies what content is shown in the list below. */}
-      <p className="surah-list-subtitle">Browse Surahs and open any Surah to read its Ayat and translation.</p>
+      <p className="surah-list-subtitle">Select a Surah to begin reading and studying the Quran with translations.</p>
 
       {/* This grid renders one card per surah and links to the dynamic surah route. */}
       <section className="surah-grid" aria-label="Surah list">

@@ -67,13 +67,6 @@ export default async function SurahDetailPage({ params, searchParams }: SurahDet
 
   return (
     <main className="surah-detail-page">
-      {/* This top row gives navigation back to the Surah index for easier flow. */}
-      <div className="surah-detail-topbar">
-        <Link href="/" className="back-link">
-          Back To Surah List
-        </Link>
-      </div>
-
       {/* This header identifies the Surah clearly in both naming styles. */}
       <header className="surah-detail-header">
         <h1 className="surah-detail-title">{surahMeta.nameEnglish}</h1>
@@ -84,11 +77,14 @@ export default async function SurahDetailPage({ params, searchParams }: SurahDet
       {/* If content is missing, we show an inline safe fallback instead of crashing. */}
       {surahContent.length === 0 ? (
         <section className="surah-empty-state" aria-live="polite">
-          No ayat data is currently available for this Surah.
+          <p>No ayat data is currently available for this Surah.</p>
+          <Link href="/" className="back-link" style={{ display: "inline-block", marginTop: "16px" }}>
+            ← Back to Surahs
+          </Link>
         </section>
       ) : (
-          // Manual-only slider provides focused ayah reading with previous/next controls.
-          <AyahSlider ayat={surahContent} initialAyahNumber={initialAyahNumber} />
+        // Manual-only slider provides focused ayah reading with previous/next controls.
+        <AyahSlider ayat={surahContent} initialAyahNumber={initialAyahNumber} />
       )}
     </main>
   );
