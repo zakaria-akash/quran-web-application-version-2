@@ -2,7 +2,7 @@
 
 Live application:
 
-- <https://quran-web-application.vercel.app/>
+- <https://quran-web-application-version-2.vercel.app/>
 
 Quran Web Application 2.0 is a production-ready Quran reader built with Next.js App Router and TypeScript. It uses a local Quran JSON dataset, server-side API routes, and a responsive reading layout with a permanent desktop sidebar and desktop settings panel.
 

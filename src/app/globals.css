@@ -313,6 +313,7 @@ h2 {
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .drawer-backdrop.open {
@@ -332,6 +333,7 @@ h2 {
   display: flex;
   flex-direction: column;
   box-shadow: 0 22px 48px var(--color-shadow);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .drawer {
@@ -405,7 +407,7 @@ h2 {
 
 .surah-sidebar-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   width: 100%;
   padding: 12px 16px;
@@ -433,7 +435,7 @@ h2 {
   border-radius: 10px;
   background: var(--color-surface-strong);
   color: var(--color-text-strong);
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
@@ -748,6 +750,8 @@ h2 {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  overflow: hidden;
 }
 
 .app-header-search-shell {
