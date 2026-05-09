@@ -1,6 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+/**
+ * Represents the basic Surah metadata.
+ */
 export interface Surah {
   id: number;
   nameArabic: string;
@@ -9,18 +12,27 @@ export interface Surah {
   totalAyah: number | null;
 }
 
+/**
+ * Represents an individual Ayah (verse) text in Arabic.
+ */
 export interface Ayah {
   surahId: number;
   ayahNumber: number;
   arabicText: string;
 }
 
+/**
+ * Represents the translation of a specific Ayah.
+ */
 export interface Translation {
   surahId: number;
   ayahNumber: number;
   text: string;
 }
 
+/**
+ * A joined record of both Arabic text and English translation for a single Ayah.
+ */
 export interface SurahContent {
   surahId: number;
   ayahNumber: number;
@@ -28,35 +40,38 @@ export interface SurahContent {
   translationText: string;
 }
 
+/**
+ * In-memory cache for loaded and parsed Quran datasets to improve performance.
+ */
 interface QuranDataCache {
   surahs: Surah[] | null;
   ayat: Ayah[] | null;
   translations: Translation[] | null;
 }
 
-// This cache object stores parsed dataset arrays so repeated calls do not
-// re-read and re-parse the same JSON files during a server process lifetime.
+// Global cache to persist across server requests.
 const quranDataCache: QuranDataCache = {
   surahs: null,
   ayat: null,
   translations: null,
 };
 
-// This constant points to the dataset directory agreed in Phase 0.
+// Base path to the dataset directory inside the public folder.
 const QURAN_DATA_DIR = path.join(process.cwd(), "public", "quran-json");
 
-// These file names are centralized so any future renaming stays in one place.
+// Filename constants for dataset files.
 const DATA_FILES = {
   surahs: "surah.json",
   ayat: "ayat.json",
   translations: "translation.json",
 };
 
-// In development we still use cache to prevent OOM when multiple pre-fetches occur.
-// Dataset file edits will require a server restart to reflect in the UI.
+// Toggle for production caching.
 const SHOULD_USE_DATA_CACHE = true;
 
-// This helper safely converts values to positive integers for ID fields.
+/**
+ * Sanitizes input to ensure it's a valid positive integer (used for IDs/Indices).
+ */
 function toPositiveInteger(value: string | number | null | undefined): number | null {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1) {
@@ -65,18 +80,22 @@ function toPositiveInteger(value: string | number | null | undefined): number | 
   return parsed;
 }
 
-// This helper builds an absolute file path from the known dataset directory.
+/**
+ * Returns the absolute path for a dataset file.
+ */
 function getDataFilePath(fileName: string): string {
   return path.join(QURAN_DATA_DIR, fileName);
 }
 
-// This helper reads and parses JSON files with clear error context.
+/**
+ * Reads a JSON file from disk and parses it into a native JavaScript array.
+ * Throws an error if the content is not a valid JSON array.
+ */
 async function readJsonArray(fileName: string): Promise<any[]> {
   const absolutePath = getDataFilePath(fileName);
   const rawFileContent = await readFile(absolutePath, "utf8");
   const parsedValue = JSON.parse(rawFileContent);
 
-  // The data layer expects top-level arrays for predictable iteration.
   if (!Array.isArray(parsedValue)) {
     throw new Error(`${fileName} must contain a top-level array.`);
   }
@@ -84,13 +103,15 @@ async function readJsonArray(fileName: string): Promise<any[]> {
   return parsedValue;
 }
 
-// This helper validates and normalizes one surah record.
+/**
+ * Normalizes a raw object from the Surah JSON into a structured Surah object,
+ * ensuring all required fields are present and correctly typed.
+ */
 function normalizeSurahRecord(inputRecord: any): Surah | null {
   const id = toPositiveInteger(inputRecord?.id);
   const nameArabic = typeof inputRecord?.nameArabic === "string" ? inputRecord.nameArabic.trim() : "";
   const nameEnglish = typeof inputRecord?.nameEnglish === "string" ? inputRecord.nameEnglish.trim() : "";
 
-  // Returning null means the record is invalid and should be skipped safely.
   if (!id || !nameArabic || !nameEnglish) {
     return null;
   }
@@ -105,13 +126,14 @@ function normalizeSurahRecord(inputRecord: any): Surah | null {
   };
 }
 
-// This helper validates and normalizes one ayah record.
+/**
+ * Normalizes raw ayah records into a consistent structure.
+ */
 function normalizeAyahRecord(inputRecord: any): Ayah | null {
   const surahId = toPositiveInteger(inputRecord?.surahId);
   const ayahNumber = toPositiveInteger(inputRecord?.ayahNumber);
   const arabicText = typeof inputRecord?.arabicText === "string" ? inputRecord.arabicText.trim() : "";
 
-  // Returning null means the record is invalid and should be skipped safely.
   if (!surahId || !ayahNumber || !arabicText) {
     return null;
   }
@@ -123,13 +145,14 @@ function normalizeAyahRecord(inputRecord: any): Ayah | null {
   };
 }
 
-// This helper validates and normalizes one translation record.
+/**
+ * Normalizes raw translation records into a consistent structure.
+ */
 function normalizeTranslationRecord(inputRecord: any): Translation | null {
   const surahId = toPositiveInteger(inputRecord?.surahId);
   const ayahNumber = toPositiveInteger(inputRecord?.ayahNumber);
   const text = typeof inputRecord?.text === "string" ? inputRecord.text.trim() : "";
 
-  // Returning null means the record is invalid and should be skipped safely.
   if (!surahId || !ayahNumber || !text) {
     return null;
   }
@@ -141,12 +164,17 @@ function normalizeTranslationRecord(inputRecord: any): Translation | null {
   };
 }
 
-// This helper applies a normalizer and removes invalid entries.
+/**
+ * Utility to map over a raw dataset array, applying a normalization function,
+ * and filtering out any records that failed validation.
+ */
 function normalizeArrayRecords<T, R>(inputArray: T[], normalizer: (item: T) => R | null): R[] {
   return inputArray.map(normalizer).filter((item): item is R => item !== null);
 }
 
-// This function loads, normalizes, and caches the surah list dataset.
+/**
+ * Fetches and returns the full list of Surahs. Uses cache if available.
+ */
 export async function getSurahList(): Promise<Surah[]> {
   if (SHOULD_USE_DATA_CACHE && quranDataCache.surahs) {
     return quranDataCache.surahs;
@@ -155,7 +183,7 @@ export async function getSurahList(): Promise<Surah[]> {
   const rawSurahArray = await readJsonArray(DATA_FILES.surahs);
   const normalizedSurahs = normalizeArrayRecords(rawSurahArray, normalizeSurahRecord);
 
-  // Sorting by ID guarantees stable output order even if source order changes.
+  // Sorting by ID guarantees stable output order for the UI.
   normalizedSurahs.sort((a, b) => a.id - b.id);
   if (SHOULD_USE_DATA_CACHE) {
     quranDataCache.surahs = normalizedSurahs;
@@ -163,7 +191,9 @@ export async function getSurahList(): Promise<Surah[]> {
   return normalizedSurahs;
 }
 
-// This function loads, normalizes, and caches the ayat dataset.
+/**
+ * Fetches and returns the full list of all Ayahs in the Quran.
+ */
 export async function getAyatList(): Promise<Ayah[]> {
   if (SHOULD_USE_DATA_CACHE && quranDataCache.ayat) {
     return quranDataCache.ayat;
@@ -172,7 +202,7 @@ export async function getAyatList(): Promise<Ayah[]> {
   const rawAyatArray = await readJsonArray(DATA_FILES.ayat);
   const normalizedAyat = normalizeArrayRecords(rawAyatArray, normalizeAyahRecord);
 
-  // Sorting by surah and ayah provides deterministic reading sequence.
+  // Sort ensures Ayahs are processed in a predictable order.
   normalizedAyat.sort((a, b) => a.surahId - b.surahId || a.ayahNumber - b.ayahNumber);
   if (SHOULD_USE_DATA_CACHE) {
     quranDataCache.ayat = normalizedAyat;
@@ -180,7 +210,9 @@ export async function getAyatList(): Promise<Ayah[]> {
   return normalizedAyat;
 }
 
-// This function loads, normalizes, and caches the translation dataset.
+/**
+ * Fetches and returns the full list of all translations in the Quran.
+ */
 export async function getTranslationList(): Promise<Translation[]> {
   if (SHOULD_USE_DATA_CACHE && quranDataCache.translations) {
     return quranDataCache.translations;
@@ -192,7 +224,7 @@ export async function getTranslationList(): Promise<Translation[]> {
     normalizeTranslationRecord,
   );
 
-  // Sorting by surah and ayah keeps index alignment predictable.
+  // Sort keeps translation data aligned with the Ayah list order.
   normalizedTranslations.sort((a, b) => a.surahId - b.surahId || a.ayahNumber - b.ayahNumber);
   if (SHOULD_USE_DATA_CACHE) {
     quranDataCache.translations = normalizedTranslations;
@@ -200,7 +232,9 @@ export async function getTranslationList(): Promise<Translation[]> {
   return normalizedTranslations;
 }
 
-// This function returns all ayat for one surah using a safe numeric ID parse.
+/**
+ * Filters and returns all Ayahs belonging to a specific Surah ID.
+ */
 export async function getAyatBySurahId(surahIdInput: string | number): Promise<Ayah[]> {
   const surahId = toPositiveInteger(surahIdInput);
   if (!surahId) {
@@ -211,7 +245,9 @@ export async function getAyatBySurahId(surahIdInput: string | number): Promise<A
   return ayatList.filter((ayah) => ayah.surahId === surahId);
 }
 
-// This function returns all translations for one surah using a safe numeric ID parse.
+/**
+ * Filters and returns all translation lines belonging to a specific Surah ID.
+ */
 export async function getTranslationsBySurahId(surahIdInput: string | number): Promise<Translation[]> {
   const surahId = toPositiveInteger(surahIdInput);
   if (!surahId) {
@@ -222,7 +258,10 @@ export async function getTranslationsBySurahId(surahIdInput: string | number): P
   return translationList.filter((translation) => translation.surahId === surahId);
 }
 
-// This function joins ayat and translation by surah and ayah number for rendering.
+/**
+ * Combines Arabic Ayah text and its corresponding translation into a unified
+ * content record for a specific Surah ID, used for the Surah reader page.
+ */
 export async function getSurahContent(surahIdInput: string | number): Promise<SurahContent[]> {
   const surahId = toPositiveInteger(surahIdInput);
   if (!surahId) {
@@ -234,11 +273,12 @@ export async function getSurahContent(surahIdInput: string | number): Promise<Su
     getTranslationsBySurahId(surahId),
   ]);
 
-  // Map lookup keeps the join operation efficient for larger datasets.
+  // Use a map to build the join efficiently in O(N).
   const translationByAyahNumber = new Map<number, string>(
     translations.map((translation) => [translation.ayahNumber, translation.text]),
   );
 
+  // Join the records by matching verse numbers.
   return ayat.map((ayah) => ({
     surahId: ayah.surahId,
     ayahNumber: ayah.ayahNumber,
@@ -247,11 +287,13 @@ export async function getSurahContent(surahIdInput: string | number): Promise<Su
   }));
 }
 
-// This function performs case-insensitive translation search for API or UI use.
+/**
+ * Searches across all translation data for a keyword or phrase,
+ * returns matches across any Surah.
+ */
 export async function searchTranslationText(queryInput: string): Promise<Translation[]> {
   const query = typeof queryInput === "string" ? queryInput.trim().toLowerCase() : "";
 
-  // Empty queries return no results so callers can avoid noisy full dumps.
   if (!query) {
     return [];
   }
@@ -260,7 +302,9 @@ export async function searchTranslationText(queryInput: string): Promise<Transla
   return translationList.filter((entry) => entry.text.toLowerCase().includes(query));
 }
 
-// This function clears cache entries, useful in tests or debug flows.
+/**
+ * Clears the in-memory dataset cache. Useful for testing or hot-reloading scenarios.
+ */
 export function clearQuranCache(): void {
   quranDataCache.surahs = null;
   quranDataCache.ayat = null;

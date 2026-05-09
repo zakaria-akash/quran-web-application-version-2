@@ -21,6 +21,8 @@ interface AppHeaderProps {
   surahs: Surah[];
 }
 
+// The header search only needs a focused subset of ayah result fields, so this
+// shape stays smaller and easier to reason about than a full backend model.
 function toArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? value : [];
 }
@@ -73,6 +75,8 @@ function matchSurahQuery(query: string, surah: Surah): boolean {
   return getEditDistance(normalizedQuery, normalizedEnglishName) <= 2;
 }
 
+// These icon helpers keep the large header component readable while ensuring
+// every control uses the same theme-aware SVG sizing and wrapper treatment.
 function HeaderIcon({
   children,
   label,
@@ -158,6 +162,8 @@ function ThemeToggleIcon({ theme }: { theme: ThemeMode }) {
 }
 
 export default function AppHeader({ surahs }: AppHeaderProps) {
+  // Theme state is global, but the header is the primary place where users
+  // switch between dark and light modes.
   const { theme, toggleTheme } = useReaderSettings();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -171,8 +177,10 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
 
   const searchShellRef = useRef<HTMLDivElement>(null);
   const trimmedQuery = useMemo(() => query.trim(), [query]);
+  // Search work is deferred so text input remains responsive while results update.
   const deferredQuery = useDeferredValue(trimmedQuery);
 
+  // Closing search also clears transient UI state so each new open starts fresh.
   const closeSearch = () => {
     setIsSearchOpen(false);
     setQuery("");
@@ -184,6 +192,8 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
   };
 
   useEffect(() => {
+    // Clicking outside the search shell should hide the result panel without
+    // forcing the entire search modal to close immediately.
     function handlePointerDown(event: PointerEvent) {
       const shell = searchShellRef.current;
       if (!shell || shell.contains(event.target as Node)) {
@@ -197,6 +207,8 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
   }, []);
 
   useEffect(() => {
+    // Search modal, navigation drawer, and settings drawer all lock background
+    // scrolling and share Escape-key dismissal for consistent overlay behavior.
     if (!isSearchOpen && !isNavDrawerOpen && !isSettingsDrawerOpen) {
       return undefined;
     }
@@ -220,6 +232,8 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
   }, [isNavDrawerOpen, isSearchOpen, isSettingsDrawerOpen]);
 
   useEffect(() => {
+    // Surah-name matching is instant and local, while translation search stays
+    // debounced so the API is not called on every keystroke.
     if (!deferredQuery) {
       setResults([]);
       setSurahMatches([]);
@@ -274,6 +288,8 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
 
   return (
     <>
+      {/* The persistent header is the global control surface for search, theme,
+          and mobile-only navigation/settings actions. */}
       <header className="app-header">
         <div className="app-header-left">
           <button
@@ -295,6 +311,7 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
         </div>
 
         <div className="app-header-right">
+          {/* Search opens a dedicated overlay so the compact header layout stays uncluttered. */}
           <button
             type="button"
             onClick={() => (isSearchOpen ? closeSearch() : setIsSearchOpen(true))}
@@ -319,6 +336,7 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
             </HeaderIcon>
           </button>
 
+          {/* On smaller screens the settings UI moves into a drawer to preserve reader space. */}
           <button
             type="button"
             className="app-header-settings-icon app-header-mobile-settings"
@@ -334,6 +352,8 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
       </header>
 
       {isSearchOpen ? (
+        // The search overlay combines local Surah matches with API-backed ayah
+        // matches so readers can jump to either level from one workflow.
         <div className="settings-modal-backdrop app-search-backdrop" onClick={closeSearch}>
           <section
             className="settings-modal app-search-modal"
@@ -434,6 +454,8 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
       />
 
       <nav className={`drawer ${isNavDrawerOpen ? "open" : ""}`} aria-hidden={!isNavDrawerOpen}>
+        {/* The mobile navigation drawer reuses the same sidebar component as desktop
+            so Surah browsing stays behaviorally identical across breakpoints. */}
         <div className="drawer-header">
           <Link href="/" className="app-header-brand" onClick={() => setIsNavDrawerOpen(false)}>
             <img src="/green-leaf.svg" alt="Quran Mazid logo" className="app-header-logo" />
@@ -459,6 +481,8 @@ export default function AppHeader({ surahs }: AppHeaderProps) {
       />
 
       <aside className={`settings-drawer ${isSettingsDrawerOpen ? "open" : ""}`} aria-hidden={!isSettingsDrawerOpen}>
+        {/* The mobile settings drawer renders the same settings content as the
+            desktop panel, only within a mobile-friendly shell. */}
         <div className="drawer-header">
           <div className="app-header-brand">
             <img src="/green-leaf.svg" alt="Quran Mazid logo" className="app-header-logo" />
