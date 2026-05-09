@@ -23,8 +23,6 @@ dist/
 coverage/
 
 # Environment files
-.env
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -59,3 +57,4 @@ next-env.d.ts
 .continue/
 .roo/
 .windsurf/
+config.bat
